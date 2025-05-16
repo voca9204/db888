@@ -1,0 +1,37 @@
+{
+	"models": {
+		"main": {
+			"provider": "anthropic",
+			"modelId": "claude-3-7-sonnet-20250219",
+			"maxTokens": 120000,
+			"temperature": 0.2,
+			"apiKey": "${ANTHROPIC_API_KEY}"
+		},
+		"research": {
+			"provider": "perplexity",
+			"modelId": "sonar-pro",
+			"maxTokens": 8700,
+			"temperature": 0.1,
+			"apiKey": "${PERPLEXITY_API_KEY}"
+		},
+		"fallback": {
+			"provider": "anthropic",
+			"modelId": "claude-3.5-sonnet-20240620",
+			"maxTokens": 120000,
+			"temperature": 0.1,
+			"apiKey": "${ANTHROPIC_API_KEY}"
+		}
+	},
+	"global": {
+		"logLevel": "info",
+		"debug": false,
+		"defaultSubtasks": 5,
+		"defaultPriority": "medium",
+		"projectName": "Taskmaster",
+		"ollamaBaseUrl": "http://localhost:11434/api",
+		"azureOpenaiBaseUrl": "https://your-endpoint.openai.azure.com/",
+		"openaiApiKey": "${OPENAI_API_KEY}",
+		"anthropicApiKey": "${ANTHROPIC_API_KEY}",
+		"perplexityApiKey": "${PERPLEXITY_API_KEY}"
+	}
+}

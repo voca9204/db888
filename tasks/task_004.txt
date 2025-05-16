@@ -1,0 +1,26 @@
+# Task ID: 4
+# Title: Set Up React Router and Application Routes
+# Status: done
+# Dependencies: 1, 3
+# Priority: high
+# Description: Implement React Router v6 for navigation and define the application's route structure.
+# Details:
+1. Install React Router: `npm install react-router-dom`
+2. Create a router configuration in src/router/index.tsx
+3. Define main routes:
+   - / (Dashboard)
+   - /login (Authentication)
+   - /database (Database connection management)
+   - /schema (Database schema visualization)
+   - /tables (Table browser)
+   - /query-builder (Query builder)
+   - /templates (Search templates)
+   - /results (Query results)
+   - /settings (User settings)
+4. Implement route guards for authenticated routes
+5. Create layout components for different sections
+6. Set up navigation components (Navbar, Sidebar)
+7. Implement breadcrumb navigation
+
+# Test Strategy:
+Test navigation between routes. Verify route guards prevent unauthorized access. Test browser back/forward navigation. Ensure routes are correctly rendered with appropriate components.

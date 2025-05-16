@@ -1,0 +1,22 @@
+# Task ID: 6
+# Title: Set Up State Management with Zustand
+# Status: done
+# Dependencies: 1
+# Priority: medium
+# Description: Implement Zustand for application state management with appropriate stores for different features.
+# Details:
+1. Install Zustand: `npm install zustand`
+2. Create store directory structure in src/stores
+3. Implement core stores:
+   - userStore (user preferences and settings)
+   - dbConnectionStore (database connection information)
+   - schemaStore (database schema information)
+   - queryStore (query builder state)
+   - resultsStore (query results)
+4. Implement persistence for relevant stores using zustand/middleware
+5. Create typed selectors for accessing store state
+6. Set up store initialization and reset logic
+7. Implement store middleware for logging in development
+
+# Test Strategy:
+Create unit tests for each store to verify state updates correctly. Test store persistence across page refreshes. Verify store selectors return expected values. Test store interactions with components.

@@ -1,0 +1,24 @@
+# Task ID: 12
+# Title: Implement React Query for Server State Management
+# Status: done
+# Dependencies: 6, 7
+# Priority: medium
+# Description: Set up React Query to manage server state, caching, and data fetching.
+# Details:
+1. Install React Query: `npm install @tanstack/react-query`
+2. Set up QueryClient and QueryClientProvider
+3. Create custom hooks for common queries:
+   - useTableList
+   - useTableSchema
+   - useTableData
+   - useQueryResults
+4. Implement query caching strategies
+5. Add query invalidation logic
+6. Implement optimistic updates where appropriate
+7. Create error handling and retry logic
+8. Add loading states and indicators
+9. Implement background refetching for stale data
+10. Create query devtools for development environment
+
+# Test Strategy:
+Test query hooks with various data scenarios. Verify caching works correctly. Test error handling and retry logic. Verify loading states are correctly displayed. Test query invalidation and refetching.

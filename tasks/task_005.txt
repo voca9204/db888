@@ -1,0 +1,20 @@
+# Task ID: 5
+# Title: Implement Firebase Authentication
+# Status: done
+# Dependencies: 2, 4
+# Priority: high
+# Description: Set up user authentication using Firebase Authentication with email/password and role-based access control.
+# Details:
+1. Configure Firebase Authentication in Firebase Console
+2. Enable email/password authentication method
+3. Create authentication hooks in src/hooks/useAuth.ts
+4. Implement sign-up, sign-in, and sign-out functionality
+5. Create AuthContext for global auth state management
+6. Implement protected routes with authentication checks
+7. Create user profile storage in Firestore
+8. Set up role-based access control (admin, operator, viewer)
+9. Implement password reset functionality
+10. Add Firebase Security Rules for role-based permissions
+
+# Test Strategy:
+Test user registration, login, and logout flows. Verify password reset functionality. Test role-based access restrictions. Ensure authentication state persists across page refreshes. Test invalid login attempts and error handling.

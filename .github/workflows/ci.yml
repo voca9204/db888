@@ -1,0 +1,49 @@
+name: CI Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+    
+    - name: Install main dependencies
+      working-directory: ./db-master
+      run: npm ci
+    
+    - name: Install function dependencies
+      working-directory: ./functions
+      run: npm ci
+    
+    - name: Lint frontend
+      working-directory: ./db-master
+      run: npm run lint
+    
+    - name: Lint functions
+      working-directory: ./functions
+      run: npm run lint
+    
+    - name: Test frontend
+      working-directory: ./db-master
+      run: npm run test:run
+    
+    - name: Build frontend
+      working-directory: ./db-master
+      run: npm run build
+    
+    - name: Build functions
+      working-directory: ./functions
+      run: npm run build

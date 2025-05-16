@@ -1,0 +1,918 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Initialize Vite + React Project with TypeScript",
+      "description": "Set up the initial project structure using Vite with React and TypeScript configuration.",
+      "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "details": "1. Install Node.js and npm if not already installed\n2. Create a new Vite project: `npm create vite@latest db-master -- --template react-ts`\n3. Navigate to project directory: `cd db-master`\n4. Install dependencies: `npm install`\n5. Configure tsconfig.json for strict type checking\n6. Set up project structure with folders for components, hooks, services, types, and utils\n7. Create initial .gitignore file\n8. Initialize git repository\n9. Make initial commit",
+      "testStrategy": "Verify project builds successfully with `npm run build` and runs locally with `npm run dev`. Ensure TypeScript compilation works without errors. Run test suite with `npm test` to verify testing environment is properly configured.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Vite project with React and TypeScript template",
+          "description": "Initialize a new Vite project using the React TypeScript template with 'npm create vite@latest db-master -- --template react-ts'",
+          "details": "Run the following commands:\n```bash\nnpm create vite@latest db-master -- --template react-ts\ncd db-master\nnpm install\n```",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        },
+        {
+          "id": 2,
+          "title": "Set up ESLint and Prettier",
+          "description": "Configure ESLint and Prettier for code quality and consistency with TypeScript support",
+          "details": "Install ESLint and Prettier dependencies:\n```bash\nnpm install -D eslint eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-import \nnpm install -D @typescript-eslint/eslint-plugin @typescript-eslint/parser\nnpm install -D prettier eslint-config-prettier eslint-plugin-prettier\n```\n\nCreate appropriate configuration files for ESLint and Prettier.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        },
+        {
+          "id": 3,
+          "title": "Set up project directory structure",
+          "description": "Create basic project directory structure with src/components, src/hooks, src/pages, src/utils, and src/types folders",
+          "details": "Run the following commands to create the directory structure:\n```bash\nmkdir -p src/components/ui\nmkdir -p src/pages\nmkdir -p src/hooks\nmkdir -p src/utils\nmkdir -p src/types\nmkdir -p src/services\nmkdir -p src/assets\nmkdir -p src/firebase\nmkdir -p src/context\nmkdir -p src/store\n```",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        },
+        {
+          "id": 4,
+          "title": "Configure TypeScript settings",
+          "description": "Configure TypeScript with proper tsconfig.json settings, including strict mode and appropriate path aliases",
+          "details": "Update the tsconfig.json file with the following configuration:\n```json\n{\n  \"compilerOptions\": {\n    \"target\": \"ES2020\",\n    \"useDefineForClassFields\": true,\n    \"lib\": [\"ES2020\", \"DOM\", \"DOM.Iterable\"],\n    \"module\": \"ESNext\",\n    \"skipLibCheck\": true,\n    \"moduleResolution\": \"bundler\",\n    \"allowImportingTsExtensions\": true,\n    \"resolveJsonModule\": true,\n    \"isolatedModules\": true,\n    \"noEmit\": true,\n    \"jsx\": \"react-jsx\",\n    \"strict\": true,\n    \"noUnusedLocals\": true,\n    \"noUnusedParameters\": true,\n    \"noFallthroughCasesInSwitch\": true,\n    \"baseUrl\": \".\",\n    \"paths\": {\n      \"@/*\": [\"./src/*\"]\n    }\n  },\n  \"include\": [\"src\"],\n  \"references\": [{ \"path\": \"./tsconfig.node.json\" }]\n}\n```",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        },
+        {
+          "id": 5,
+          "title": "Set up testing environment",
+          "description": "Set up testing environment with Vitest and React Testing Library for component and hook testing",
+          "details": "Install testing dependencies:\n```bash\nnpm install -D vitest jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event\n```\n\nUpdate vite.config.ts to include test configuration:\n```typescript\nimport { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\nimport path from 'path'\n\n// https://vitejs.dev/config/\nexport default defineConfig({\n  plugins: [react()],\n  resolve: {\n    alias: {\n      '@': path.resolve(__dirname, './src'),\n    },\n  },\n  test: {\n    globals: true,\n    environment: 'jsdom',\n    setupFiles: './src/test/setup.ts',\n  },\n})\n```\n\nCreate a setup file at src/test/setup.ts for test configuration.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Set Up Firebase Project and Configuration",
+      "description": "Configure Firebase services for authentication, Firestore, Cloud Functions, and hosting using the existing Firebase project.",
+      "status": "done",
+      "dependencies": [
+        1
+      ],
+      "priority": "high",
+      "details": "The Firebase project has already been created with the following configuration:\n\n```javascript\n// Your web app's Firebase configuration\nconst firebaseConfig = {\n  apiKey: \"AIzaSyD2RY02pN2RrhT8Qt2hTSEilRqV4JAbCR0\",\n  authDomain: \"db888-67827.firebaseapp.com\",\n  projectId: \"db888-67827\",\n  storageBucket: \"db888-67827.firebasestorage.app\",\n  messagingSenderId: \"888497598316\",\n  appId: \"1:888497598316:web:ad0cb0364d906c26658d49\"\n};\n\n// Initialize Firebase\nconst app = initializeApp(firebaseConfig);\n```\n\nRemaining steps:\n1. Install Firebase CLI: `npm install -g firebase-tools`\n2. Login to Firebase: `firebase login`\n3. Initialize Firebase in the project: `firebase init`\n4. Select Firestore, Functions, Hosting, and Authentication\n5. Install Firebase SDK: `npm install firebase`\n6. Create src/firebase/config.ts file with the provided Firebase configuration\n7. Set up environment variables for Firebase config\n8. Configure Firebase security rules for Firestore",
+      "testStrategy": "Verify Firebase connection by testing authentication flow. Confirm Firestore read/write operations work in development environment. Ensure environment variables are properly loaded.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Firebase project",
+          "description": "Create a new Firebase project in the Firebase Console for the DB Master application",
+          "details": "Firebase project has already been created with ID: db888-67827",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 2,
+          "title": "Set up Firebase Authentication",
+          "description": "Enable and configure Firebase Authentication with email/password, and optionally Google authentication methods",
+          "details": "Use the existing Firebase project (db888-67827) to configure authentication methods in the Firebase Console",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 3,
+          "title": "Configure Firestore database",
+          "description": "Set up Firestore database with initial collections for users, connections, queryTemplates, and settings",
+          "details": "Use the existing Firebase project (db888-67827) to set up Firestore collections and structure",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 4,
+          "title": "Set up Firebase Cloud Functions",
+          "description": "Set up Firebase Cloud Functions environment with Node.js and TypeScript for server-side operations",
+          "details": "Initialize Cloud Functions with the existing Firebase project configuration",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 5,
+          "title": "Integrate Firebase with React application",
+          "description": "Install and configure Firebase SDKs in the React application, setting up environment variables for Firebase configuration",
+          "details": "Use the provided Firebase configuration object to set up the connection in src/firebase/config.ts",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 6,
+          "title": "Set up Firestore security rules",
+          "description": "Configure Firebase security rules for Firestore to ensure proper access control based on user roles",
+          "details": "Create appropriate security rules for the existing Firebase project (db888-67827)",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        },
+        {
+          "id": 7,
+          "title": "Create environment variables for Firebase config",
+          "description": "Set up environment variables to securely store the Firebase configuration values",
+          "details": "Create .env file with the Firebase configuration values from the provided config object, ensuring API keys are not exposed in the repository",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 2
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Implement UI Framework with Tailwind CSS and Headless UI",
+      "description": "Set up and configure Tailwind CSS and Headless UI for the application's design system.",
+      "status": "done",
+      "dependencies": [
+        1
+      ],
+      "priority": "high",
+      "details": "1. Install Tailwind CSS: `npm install -D tailwindcss postcss autoprefixer`\n2. Initialize Tailwind: `npx tailwindcss init -p`\n3. Configure tailwind.config.js to scan React components\n4. Add Tailwind directives to main CSS file\n5. Install Headless UI: `npm install @headlessui/react`\n6. Install additional UI libraries: `npm install @tailwindcss/forms @tailwindcss/typography clsx lucide-react`\n7. Set up responsive breakpoints and custom theme configuration\n8. Implement dark/light mode theming with ThemeProvider\n9. Create basic layout components (Container, Card, Panel)\n10. Create reusable UI components (Button, Input, Select, Modal) with proper variants",
+      "testStrategy": "Create a UI component storybook or test page to verify all base components render correctly. Test responsive layouts across different screen sizes. Ensure accessibility standards are met using browser dev tools. Verify theme switching functionality works properly between light, dark, and system modes.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Install and configure Tailwind CSS",
+          "description": "Install and configure Tailwind CSS with PostCSS in the Vite project",
+          "details": "```bash\nnpm install -D tailwindcss postcss autoprefixer\nnpx tailwindcss init -p\n```\n\nConfigure tailwind.config.js to scan React components in the project.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 2,
+          "title": "Customize Tailwind theme",
+          "description": "Set up custom Tailwind CSS theme with colors, fonts, and other design tokens appropriate for a database management UI",
+          "details": "Configure tailwind.config.js with the following settings:\n\n```javascript\n/** @type {import('tailwindcss').Config} */\nmodule.exports = {\n  darkMode: 'class',\n  content: [\n    \"./index.html\",\n    \"./src/**/*.{js,ts,jsx,tsx}\",\n  ],\n  theme: {\n    extend: {\n      colors: {\n        primary: {\n          50: '#eef2ff',\n          100: '#e0e7ff',\n          200: '#c7d2fe',\n          300: '#a5b4fc',\n          400: '#818cf8',\n          500: '#6366f1',\n          600: '#4f46e5',\n          700: '#4338ca',\n          800: '#3730a3',\n          900: '#312e81',\n          950: '#1e1b4b',\n        },\n        secondary: {\n          50: '#f8fafc',\n          100: '#f1f5f9',\n          200: '#e2e8f0',\n          300: '#cbd5e1',\n          400: '#94a3b8',\n          500: '#64748b',\n          600: '#475569',\n          700: '#334155',\n          800: '#1e293b',\n          900: '#0f172a',\n          950: '#020617',\n        },\n      },\n      fontFamily: {\n        sans: ['Inter var', 'ui-sans-serif', 'system-ui', 'sans-serif'],\n        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],\n      },\n    },\n  },\n  plugins: [\n    require('@tailwindcss/forms'),\n    require('@tailwindcss/typography'),\n  ],\n}\n```",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 3,
+          "title": "Set up Headless UI components",
+          "description": "Install and set up Headless UI components for accessible UI elements like modals, dropdowns, and tabs",
+          "details": "Install Headless UI and additional UI-related libraries:\n\n```bash\nnpm install @headlessui/react\nnpm install @tailwindcss/forms @tailwindcss/typography\nnpm install clsx\nnpm install lucide-react # Icon library\n```\n\nAdd Tailwind directives to src/index.css:\n\n```css\n@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n@layer base {\n  :root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n  }\n}\n\n@layer base {\n  * {\n    @apply border-border;\n  }\n  body {\n    @apply bg-background text-foreground;\n    font-feature-settings: \"rlig\" 1, \"calt\" 1;\n  }\n}\n```",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 4,
+          "title": "Develop base UI components",
+          "description": "Create reusable base UI components like buttons, inputs, cards, and form elements with proper styling",
+          "details": "Create base UI components with proper variants and styling. Example for Button component:\n\n```tsx\n// src/components/ui/Button.tsx\nimport React from 'react';\nimport { cva, type VariantProps } from 'class-variance-authority';\nimport { clsx } from 'clsx';\n\nconst buttonVariants = cva(\n  'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',\n  {\n    variants: {\n      variant: {\n        default: 'bg-primary text-primary-foreground hover:bg-primary/90',\n        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',\n        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',\n        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',\n        ghost: 'hover:bg-accent hover:text-accent-foreground',\n        link: 'text-primary underline-offset-4 hover:underline',\n      },\n      size: {\n        default: 'h-10 px-4 py-2',\n        sm: 'h-9 rounded-md px-3',\n        lg: 'h-11 rounded-md px-8',\n        icon: 'h-10 w-10',\n      },\n    },\n    defaultVariants: {\n      variant: 'default',\n      size: 'default',\n    },\n  }\n);\n\nexport interface ButtonProps\n  extends React.ButtonHTMLAttributes<HTMLButtonElement>,\n    VariantProps<typeof buttonVariants> {\n  asChild?: boolean;\n}\n\nconst Button = React.forwardRef<HTMLButtonElement, ButtonProps>(\n  ({ className, variant, size, asChild = false, ...props }, ref) => {\n    return (\n      <button\n        className={clsx(buttonVariants({ variant, size }), className)}\n        ref={ref}\n        {...props}\n      />\n    );\n  }\n);\nButton.displayName = 'Button';\n\nexport { Button, buttonVariants };\n```\n\nCreate similar components for Input, Select, Modal, Card, and other UI elements.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 5,
+          "title": "Implement theme switching",
+          "description": "Implement dark/light mode theming support with appropriate color schemes for each mode",
+          "details": "Create a ThemeProvider component to handle theme switching:\n\n```tsx\n// src/context/ThemeContext.tsx\nimport React, { createContext, useContext, useEffect, useState } from 'react';\n\ntype Theme = 'dark' | 'light' | 'system';\n\ntype ThemeProviderProps = {\n  children: React.ReactNode;\n  defaultTheme?: Theme;\n};\n\ntype ThemeProviderState = {\n  theme: Theme;\n  setTheme: (theme: Theme) => void;\n};\n\nconst initialState: ThemeProviderState = {\n  theme: 'system',\n  setTheme: () => null,\n};\n\nconst ThemeProviderContext = createContext<ThemeProviderState>(initialState);\n\nexport function ThemeProvider({\n  children,\n  defaultTheme = 'system',\n}: ThemeProviderProps) {\n  const [theme, setTheme] = useState<Theme>(\n    () => (localStorage.getItem('theme') as Theme) || defaultTheme\n  );\n\n  useEffect(() => {\n    const root = window.document.documentElement;\n    root.classList.remove('light', 'dark');\n\n    if (theme === 'system') {\n      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')\n        .matches\n        ? 'dark'\n        : 'light';\n      root.classList.add(systemTheme);\n      return;\n    }\n\n    root.classList.add(theme);\n  }, [theme]);\n\n  const value = {\n    theme,\n    setTheme: (theme: Theme) => {\n      localStorage.setItem('theme', theme);\n      setTheme(theme);\n    },\n  };\n\n  return (\n    <ThemeProviderContext.Provider value={value}>\n      {children}\n    </ThemeProviderContext.Provider>\n  );\n}\n\nexport const useTheme = () => {\n  const context = useContext(ThemeProviderContext);\n\n  if (context === undefined)\n    throw new Error('useTheme must be used within a ThemeProvider');\n\n  return context;\n};\n```\n\nImplement a theme toggle component that uses this provider to switch between light, dark, and system themes.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 6,
+          "title": "Fix Tailwind CSS PostCSS configuration issue",
+          "description": "Resolved the PostCSS plugin error with Tailwind CSS by reinstalling the packages and updating configuration files to ensure proper compatibility with the latest versions.",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Set Up React Router and Application Routes",
+      "description": "Implement React Router v6 for navigation and define the application's route structure.",
+      "details": "1. Install React Router: `npm install react-router-dom`\n2. Create a router configuration in src/router/index.tsx\n3. Define main routes:\n   - / (Dashboard)\n   - /login (Authentication)\n   - /database (Database connection management)\n   - /schema (Database schema visualization)\n   - /tables (Table browser)\n   - /query-builder (Query builder)\n   - /templates (Search templates)\n   - /results (Query results)\n   - /settings (User settings)\n4. Implement route guards for authenticated routes\n5. Create layout components for different sections\n6. Set up navigation components (Navbar, Sidebar)\n7. Implement breadcrumb navigation",
+      "testStrategy": "Test navigation between routes. Verify route guards prevent unauthorized access. Test browser back/forward navigation. Ensure routes are correctly rendered with appropriate components.",
+      "priority": "high",
+      "dependencies": [
+        1,
+        3
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 5,
+      "title": "Implement Firebase Authentication",
+      "description": "Set up user authentication using Firebase Authentication with email/password and role-based access control.",
+      "details": "1. Configure Firebase Authentication in Firebase Console\n2. Enable email/password authentication method\n3. Create authentication hooks in src/hooks/useAuth.ts\n4. Implement sign-up, sign-in, and sign-out functionality\n5. Create AuthContext for global auth state management\n6. Implement protected routes with authentication checks\n7. Create user profile storage in Firestore\n8. Set up role-based access control (admin, operator, viewer)\n9. Implement password reset functionality\n10. Add Firebase Security Rules for role-based permissions",
+      "testStrategy": "Test user registration, login, and logout flows. Verify password reset functionality. Test role-based access restrictions. Ensure authentication state persists across page refreshes. Test invalid login attempts and error handling.",
+      "priority": "high",
+      "dependencies": [
+        2,
+        4
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 6,
+      "title": "Set Up State Management with Zustand",
+      "description": "Implement Zustand for application state management with appropriate stores for different features.",
+      "details": "1. Install Zustand: `npm install zustand`\n2. Create store directory structure in src/stores\n3. Implement core stores:\n   - userStore (user preferences and settings)\n   - dbConnectionStore (database connection information)\n   - schemaStore (database schema information)\n   - queryStore (query builder state)\n   - resultsStore (query results)\n4. Implement persistence for relevant stores using zustand/middleware\n5. Create typed selectors for accessing store state\n6. Set up store initialization and reset logic\n7. Implement store middleware for logging in development",
+      "testStrategy": "Create unit tests for each store to verify state updates correctly. Test store persistence across page refreshes. Verify store selectors return expected values. Test store interactions with components.",
+      "priority": "medium",
+      "dependencies": [
+        1
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 7,
+      "title": "Implement Database Connection Management",
+      "description": "Create functionality to manage and test MariaDB connections with secure credential storage.",
+      "status": "done",
+      "dependencies": [
+        2,
+        5,
+        6
+      ],
+      "priority": "high",
+      "details": "1. Create Firebase Cloud Function for MariaDB connection testing\n2. Install MariaDB client in Cloud Functions: `npm install mariadb`\n3. Install additional packages: `npm install dotenv crypto-js`\n4. Implement connection form UI with fields for host, port, username, password, database, and SSL option\n5. Create connection testing functionality that calls the Cloud Function\n6. Store connection information securely in Firestore with encryption for sensitive fields\n7. Implement connection management UI (add, edit, delete, select active connection)\n8. Create connection status indicator\n9. Implement connection error handling and user feedback\n10. Add ability to save multiple connection profiles\n11. Create connection history tracking\n12. Implement database schema retrieval functionality",
+      "testStrategy": "Test connection to valid and invalid MariaDB instances. Verify error handling for various connection failure scenarios. Test encryption of sensitive connection data. Verify connection profiles can be saved, loaded, and deleted. Test database schema retrieval functionality with different database structures.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Develop connection management UI",
+          "description": "Create a connection management interface for storing and organizing MariaDB connection details",
+          "details": "Implement ConnectionsPage component with the following features:\n1. Display list of saved connections\n2. Add buttons for exploring, testing, and deleting connections\n3. Create NewConnectionPage component with form fields for connection details\n4. Include fields for name, host, port, database, username, password, and SSL option\n5. Add validation and error handling for form inputs\n6. Implement navigation between connection list and creation form",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 2,
+          "title": "Implement secure credential storage",
+          "description": "Implement encryption for sensitive connection information using Firebase and secure storage methods",
+          "details": "1. Create encryption utility in Cloud Functions:\n```typescript\n// functions/src/utils/encryption.ts\nimport * as CryptoJS from 'crypto-js';\n\nconst SECRET_KEY = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';\n\nexport const encrypt = (text: string): string => {\n  return CryptoJS.AES.encrypt(text, SECRET_KEY).toString();\n};\n\nexport const decrypt = (ciphertext: string): string => {\n  const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);\n  return bytes.toString(CryptoJS.enc.Utf8);\n};\n```\n2. Use encryption for password storage in Firestore\n3. Implement secure password handling in Cloud Functions\n4. Never return decrypted passwords to the client",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 3,
+          "title": "Create connection testing feature",
+          "description": "Create connection testing functionality to verify database connections before saving",
+          "details": "1. Implement testDbConnection Cloud Function:\n```typescript\n// In functions/src/index.ts\nexport const testDbConnection = functions.https.onCall(async (data, context) => {\n  // Authentication check\n  if (!context.auth) {\n    throw new functions.https.HttpsError(\n      'unauthenticated',\n      'The function must be called while authenticated.'\n    );\n  }\n\n  try {\n    const result = await testConnection({\n      host: data.host,\n      port: data.port,\n      database: data.database,\n      user: data.user,\n      password: data.password,\n      ssl: data.ssl\n    });\n    \n    return { success: true };\n  } catch (error) {\n    throw new functions.https.HttpsError('internal', error.message);\n  }\n});\n```\n2. Add test connection button in the UI\n3. Display connection test results to the user\n4. Handle connection errors gracefully",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 4,
+          "title": "Implement server-side database connector",
+          "description": "Develop Cloud Functions for secure database connection and operations from Firebase to MariaDB",
+          "details": "1. Create database service with connection pool management:\n```typescript\n// functions/src/services/database.ts\nimport * as mariadb from 'mariadb';\nimport { decrypt } from '../utils/encryption';\nimport { logger } from 'firebase-functions';\n\n// Connection pool cache\nconst connectionPools: Record<string, mariadb.Pool> = {};\n\n// Get or create connection pool\nexport const getConnectionPool = async (config: ConnectionConfig): Promise<mariadb.Pool> => {\n  const id = getConnectionId(config);\n  \n  if (connectionPools[id]) {\n    return connectionPools[id];\n  }\n  \n  try {\n    // Create connection pool\n    const pool = mariadb.createPool({\n      host: config.host,\n      port: config.port,\n      database: config.database,\n      user: config.user,\n      password: config.password,\n      ssl: config.ssl,\n      connectionLimit: 5,\n      connectTimeout: 10000,\n      acquireTimeout: 10000,\n    });\n    \n    // Cache connection pool\n    connectionPools[id] = pool;\n    return pool;\n  } catch (error) {\n    logger.error('Failed to create connection pool', error);\n    throw new Error(`Failed to create database connection: ${error.message}`);\n  }\n};\n```\n2. Implement connection testing function\n3. Create database schema retrieval functionality\n4. Add functions to handle encrypted connection configs",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 5,
+          "title": "Create connection profile management",
+          "description": "Implement connection profiles with the ability to save, edit, and delete connection configurations",
+          "details": "1. Define database connection interfaces:\n```typescript\n// src/types/database.ts\nexport interface DbConnectionConfig {\n  id: string;\n  name: string;\n  host: string;\n  port: number;\n  database: string;\n  user: string;\n  password: string; // Encrypted when stored\n  ssl: boolean;\n  createdAt: number;\n  updatedAt: number;\n  lastUsed?: number;\n  userId: string;\n}\n```\n2. Implement saveDbConnection Cloud Function\n3. Create functions to load, update, and delete connection profiles\n4. Track connection usage history\n5. Implement UI for managing connection profiles",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        },
+        {
+          "id": 6,
+          "title": "Implement database schema retrieval",
+          "description": "Create functionality to retrieve and display database schema information including tables, columns, keys, and indexes",
+          "details": "1. Define schema interfaces:\n```typescript\nexport interface DbTable {\n  name: string;\n  schema: string;\n  type: string;\n  columns: DbColumn[];\n  primaryKey?: string[];\n  foreignKeys?: DbForeignKey[];\n  indexes?: DbIndex[];\n  comment?: string;\n}\n\nexport interface DbColumn {\n  name: string;\n  type: string;\n  nullable: boolean;\n  defaultValue?: string;\n  comment?: string;\n  extra?: string;\n}\n```\n2. Implement getDbSchema Cloud Function\n3. Create SQL queries to retrieve schema information\n4. Add UI components to display database structure",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 7
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Implement Database Schema Retrieval",
+      "description": "Extend the existing database schema retrieval functionality implemented in Task 7.6 with additional features.",
+      "status": "done",
+      "dependencies": [
+        7
+      ],
+      "priority": "high",
+      "details": "Building upon the existing implementation from Task 7.6 (getDatabaseSchema), which already handles:\n1. Database schema information retrieval via Cloud Function\n2. SQL queries for extracting table definitions, columns, primary keys, foreign keys, and indexes\n3. Data models for schema information\n4. Error handling mechanisms\n5. Table and column comment extraction\n\nThis task has successfully implemented the following additional features:\n1. Schema caching mechanism in Firestore to prevent unnecessary database queries\n2. Schema refresh functionality allowing users to explicitly update schema information\n3. Large schema retrieval with pagination for better performance\n4. Schema version tracking to maintain history of schema changes\n5. Schema change detection between refreshes to highlight modifications\n6. User interface for visualizing schema information and changes",
+      "testStrategy": "Test the new caching mechanism to verify it properly stores and retrieves schema information from Firestore. Verify the schema refresh functionality correctly updates cached data. Test pagination with large schemas to ensure complete retrieval without performance issues. Validate that schema version tracking correctly identifies and logs changes between versions. Test schema change detection to confirm it accurately identifies modifications. Verify the UI correctly displays schema information and changes.",
+      "subtasks": [
+        {
+          "id": "1",
+          "title": "Implement Firestore schema caching",
+          "description": "Create a caching mechanism that stores retrieved schema information in Firestore to reduce database queries",
+          "status": "done"
+        },
+        {
+          "id": "2",
+          "title": "Develop schema refresh functionality",
+          "description": "Implement a user-triggered mechanism to explicitly refresh and update schema information",
+          "status": "done"
+        },
+        {
+          "id": "3",
+          "title": "Implement pagination for large schemas",
+          "description": "Add support for retrieving large schemas in manageable chunks to prevent timeout issues and improve performance",
+          "status": "done"
+        },
+        {
+          "id": "4",
+          "title": "Create schema version tracking",
+          "description": "Implement a system to track schema versions over time, maintaining a history of schema states",
+          "status": "done"
+        },
+        {
+          "id": "5",
+          "title": "Develop schema change detection",
+          "description": "Create functionality to identify and highlight differences between schema versions",
+          "status": "done"
+        },
+        {
+          "id": "6",
+          "title": "Implement UI for schema visualization",
+          "description": "Create user interface components to visualize schema information and changes",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Implement Table List and Structure Visualization",
+      "description": "Create UI components to display database tables and their structure in a user-friendly format.",
+      "status": "done",
+      "dependencies": [
+        3,
+        8
+      ],
+      "priority": "medium",
+      "details": "This task has been completed as part of Task 8 (Schema Search and Visualization). The SchemaViewer component already implements the core functionality required for this task:\n\n1. TableList component with search and filtering functionality\n2. TableDetails component showing table structure (columns, types, constraints)\n3. Column details view with data type information\n4. Table comparison feature (between schema versions)\n\nThe following features were originally planned but not needed or implemented as part of Task 8:\n- Table metadata display (row count, size, creation date)\n- Table grouping by schema or category\n- Table favorites functionality\n- Table structure export feature (SQL DDL, JSON)\n- Table statistics visualization\n- Table documentation editor for custom notes",
+      "testStrategy": "No additional testing required as the functionality has been implemented and tested as part of Task 8.",
+      "subtasks": []
+    },
+    {
+      "id": 10,
+      "title": "Implement Entity-Relationship Diagram (ERD) Visualization",
+      "description": "Create interactive ERD visualization to display relationships between database tables.",
+      "details": "1. Install React Flow: `npm install reactflow`\n2. Create ERD component using React Flow\n3. Generate nodes from table information\n4. Generate edges from foreign key relationships\n5. Implement interactive features (zoom, pan, select)\n6. Add ability to customize diagram layout\n7. Create mini-map for navigation in large diagrams\n8. Implement node grouping for related tables\n9. Add diagram export functionality (PNG, SVG, JSON)\n10. Create diagram saving and loading feature\n11. Implement diagram sharing functionality",
+      "testStrategy": "Test ERD rendering with various database schemas. Verify relationships are correctly displayed. Test interactive features like zoom and pan. Verify export functionality produces correct output. Test performance with large schemas.",
+      "priority": "medium",
+      "dependencies": [
+        8,
+        9
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 11,
+      "title": "Implement Table Data Browser with TanStack Table",
+      "description": "Create a data browser component to view, filter, and sort table data with pagination.",
+      "details": "1. Install TanStack Table: `npm install @tanstack/react-table`\n2. Create Firebase Cloud Function to fetch table data with pagination\n3. Implement DataBrowser component using TanStack Table\n4. Add pagination controls with configurable page size\n5. Implement column sorting functionality\n6. Create column filtering UI for different data types\n7. Add global search functionality\n8. Implement row selection and bulk actions\n9. Create column visibility toggle\n10. Add data export functionality (CSV, Excel, JSON)\n11. Implement row detail expansion for related data",
+      "testStrategy": "Test data browser with tables of various sizes. Verify pagination works correctly. Test sorting and filtering functionality. Verify export features generate correct output. Test performance with large datasets.",
+      "priority": "high",
+      "dependencies": [
+        7,
+        9
+      ],
+      "status": "done",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Install TanStack Table Library",
+          "description": "Install TanStack Table, the modern React table library for building professional, fully-featured tables with server-side pagination, filtering, and sorting.",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        },
+        {
+          "id": 2,
+          "title": "Implement DataBrowser Component",
+          "description": "Create a core DataBrowser component that leverages TanStack Table to display, filter, sort, and paginate table data fetched from the server. Implement advanced functionality such as column visibility toggle, column sorting, and column filtering.",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        },
+        {
+          "id": 3,
+          "title": "Create DataTable Wrapper Component",
+          "description": "Develop a DataTable component that wraps the DataBrowser and adds a table selection dropdown. This component allows users to select which table to browse from a provided list and displays the data using DataBrowser.",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        },
+        {
+          "id": 4,
+          "title": "Implement Table Filtering Components",
+          "description": "Implement reusable filter components for different data types (text, date range, number range, select, boolean) that can be used with the DataBrowser component.",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        },
+        {
+          "id": 5,
+          "title": "Update TableBrowser Page",
+          "description": "Update the TableBrowser page to use the new DataTable component, ensuring proper integration with the database connection store and schema store.",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 11
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Implement React Query for Server State Management",
+      "description": "Set up React Query to manage server state, caching, and data fetching.",
+      "details": "1. Install React Query: `npm install @tanstack/react-query`\n2. Set up QueryClient and QueryClientProvider\n3. Create custom hooks for common queries:\n   - useTableList\n   - useTableSchema\n   - useTableData\n   - useQueryResults\n4. Implement query caching strategies\n5. Add query invalidation logic\n6. Implement optimistic updates where appropriate\n7. Create error handling and retry logic\n8. Add loading states and indicators\n9. Implement background refetching for stale data\n10. Create query devtools for development environment",
+      "testStrategy": "Test query hooks with various data scenarios. Verify caching works correctly. Test error handling and retry logic. Verify loading states are correctly displayed. Test query invalidation and refetching.",
+      "priority": "medium",
+      "dependencies": [
+        6,
+        7
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 13,
+      "title": "Implement Basic Query Builder Interface",
+      "description": "Create the foundation for the visual query builder with condition creation and table selection.",
+      "status": "done",
+      "dependencies": [
+        8,
+        9,
+        12
+      ],
+      "priority": "high",
+      "details": "1. Design query builder UI with drag-and-drop functionality\n2. Create table selector component\n3. Implement field selector based on selected table\n4. Create condition builder component with operators appropriate for each data type\n5. Implement value input components for different data types\n6. Add AND/OR condition grouping\n7. Create SQL preview component\n8. Implement basic query validation\n9. Add query execution functionality\n10. Create query history tracking",
+      "testStrategy": "Test query building with various condition types. Verify SQL generation is correct. Test query execution with different conditions. Verify error handling for invalid queries. Test query history functionality.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create basic query builder UI",
+          "description": "Develop the UI for basic query building with table selection and simple conditions",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 2,
+          "title": "Implement drag-and-drop condition builder",
+          "description": "Implement drag-and-drop functionality for building query conditions",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 3,
+          "title": "Develop SQL generation logic",
+          "description": "Create SQL query generation logic to convert visual query builder state to valid MariaDB SQL",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 4,
+          "title": "Create field validation logic",
+          "description": "Implement field value validation based on database field types to ensure valid query conditions",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 5,
+          "title": "Create SQL viewer/editor",
+          "description": "Develop UI for viewing and editing generated SQL queries with syntax highlighting",
+          "details": "",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 6,
+          "title": "Implement condition builder component",
+          "description": "Create the condition builder component with support for various operators and value types",
+          "details": "Implement the ConditionBuilder.tsx component with support for different operators (=, !=, >, >=, <, <=, LIKE, NOT LIKE, IN, NOT IN, IS NULL, IS NOT NULL, BETWEEN), logical operators (AND, OR), and appropriate value inputs based on the selected operator.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 7,
+          "title": "Implement column selector component",
+          "description": "Create the column selector component for selecting columns from tables with optional aliases and aggregate functions",
+          "details": "Implement the ColumnSelector.tsx component with support for selecting columns from available tables, adding aliases, and applying aggregate functions (COUNT, SUM, AVG, MIN, MAX).",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 8,
+          "title": "Implement SQL preview and editing component",
+          "description": "Create the SQL preview component with syntax highlighting and manual editing capabilities",
+          "details": "Implement the SqlPreview.tsx component with features for displaying generated SQL, manual editing, copying to clipboard, and executing queries.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 9,
+          "title": "Implement query results display component",
+          "description": "Create the component for displaying query execution results in a tabular format",
+          "details": "Implement the QueryResults.tsx component with features for displaying query results in a table, handling loading states, error display, and CSV export functionality.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 10,
+          "title": "Create main query builder page component",
+          "description": "Implement the main page component that integrates all query builder components",
+          "details": "Implement the QueryBuilderPage.tsx component that integrates TableSelector, ColumnSelector, ConditionBuilder, SqlPreview, and QueryResults components with tab navigation.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 11,
+          "title": "Implement query execution Cloud Function",
+          "description": "Create the Cloud Function for executing SQL queries with proper authentication and logging",
+          "details": "Implement the executeQuery Cloud Function that handles SQL query execution, user authentication, permission checking, query logging, and result processing with size limitations.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 13
+        },
+        {
+          "id": 12,
+          "title": "Complete ConditionBuilder component implementation",
+          "description": "Finish implementing the ConditionBuilder component with all required functionality",
+          "details": "Complete the implementation of the ConditionBuilder.tsx component with state management, form handling, condition addition/removal, logical operator selection, and UI rendering for active conditions.",
+          "status": "done",
+          "dependencies": [
+            6
+          ],
+          "parentTaskId": 13
+        },
+        {
+          "id": 13,
+          "title": "Implement QueryPreview component",
+          "description": "Create the QueryPreview component for SQL preview and execution",
+          "details": "Implement the QueryPreview.tsx component with SQL generation, refresh, copy, and execution functionality that connects to the Cloud Function.",
+          "status": "done",
+          "dependencies": [
+            8
+          ],
+          "parentTaskId": 13
+        },
+        {
+          "id": 14,
+          "title": "Enhance QueryResults component",
+          "description": "Implement the QueryResults component with sorting, pagination, and CSV export",
+          "details": "Create the QueryResults.tsx component with table display, column sorting, pagination controls, and CSV export functionality using @tanstack/react-table.",
+          "status": "done",
+          "dependencies": [
+            9
+          ],
+          "parentTaskId": 13
+        },
+        {
+          "id": 15,
+          "title": "Implement main QueryBuilder component",
+          "description": "Create the main QueryBuilder component that integrates all subcomponents",
+          "details": "Implement the QueryBuilder.tsx component that combines TableSelector, ColumnSelector, ConditionBuilder, QueryPreview, and handles database schema loading.",
+          "status": "done",
+          "dependencies": [
+            6,
+            7,
+            12,
+            13
+          ],
+          "parentTaskId": 13
+        },
+        {
+          "id": 16,
+          "title": "Complete QueryBuilderPage implementation",
+          "description": "Finish the QueryBuilderPage component with connection loading and navigation",
+          "details": "Complete the QueryBuilderPage.tsx implementation with connection loading, error handling, navigation controls, and integration of the QueryBuilder and QueryResults components.",
+          "status": "done",
+          "dependencies": [
+            10,
+            15
+          ],
+          "parentTaskId": 13
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Implement Advanced Query Builder with Joins",
+      "description": "Extend the query builder to support multi-table joins and complex conditions.",
+      "details": "1. Implement join type selection (INNER, LEFT, RIGHT, FULL)\n2. Create join condition builder\n3. Add support for multiple joins\n4. Implement automatic join path suggestion based on foreign keys\n5. Create visual representation of join relationships\n6. Add support for subqueries\n7. Implement aggregate functions (COUNT, SUM, AVG, etc.)\n8. Add GROUP BY functionality\n9. Implement HAVING conditions\n10. Create ORDER BY builder\n11. Add LIMIT and OFFSET controls",
+      "testStrategy": "Test join queries with various join types. Verify complex queries generate correct SQL. Test aggregate functions and grouping. Verify subqueries work correctly. Test performance with complex queries.",
+      "priority": "medium",
+      "dependencies": [
+        13
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 15,
+      "title": "Implement Query Templates and Saving",
+      "description": "Create functionality to save, load, and share query templates with parameterization.",
+      "status": "done",
+      "dependencies": [
+        2,
+        13,
+        14
+      ],
+      "priority": "medium",
+      "details": "1. Design template data structure with parameters\n2. Create template saving functionality to Firestore\n3. Implement template loading and execution\n4. Add parameter definition interface\n5. Create parameter input form generation\n6. Implement template sharing with other users\n7. Add template categories and tags\n8. Create template search and filtering\n9. Implement template versioning\n10. Add template export and import functionality",
+      "testStrategy": "Test template saving and loading. Verify parameterized queries execute correctly with the implemented parameterUtils.ts. Test template sharing between users using the sharing modal and email-based functionality. Verify template versioning works correctly with QueryTemplateVersionModel. Test search and filtering functionality in the QueryTemplates.tsx page. Validate parameter extraction, application, and validation functions.",
+      "subtasks": [
+        {
+          "id": "15.1",
+          "title": "Implement QueryTemplateVersionModel.ts",
+          "description": "Create model for template version management functionality",
+          "status": "done"
+        },
+        {
+          "id": "15.2",
+          "title": "Implement QueryTemplateShareModel.ts",
+          "description": "Create model for template sharing functionality",
+          "status": "done"
+        },
+        {
+          "id": "15.3",
+          "title": "Implement parameter utilities",
+          "description": "Create parameterUtils.ts with functions for parameter extraction, application, and validation",
+          "status": "done"
+        },
+        {
+          "id": "15.4",
+          "title": "Implement date formatting utilities",
+          "description": "Create dateUtils.ts for template date display functionality",
+          "status": "done"
+        },
+        {
+          "id": "15.5",
+          "title": "Implement QueryTemplates.tsx page",
+          "description": "Create page for displaying template list with search and filtering capabilities",
+          "status": "done"
+        },
+        {
+          "id": "15.6",
+          "title": "Implement SaveTemplateModal.tsx",
+          "description": "Create modal component for saving and editing templates",
+          "status": "done"
+        },
+        {
+          "id": "15.7",
+          "title": "Implement ParameterEditor.tsx",
+          "description": "Create component for editing template parameters",
+          "status": "done"
+        },
+        {
+          "id": "15.8",
+          "title": "Implement TemplateCard.tsx",
+          "description": "Create component for displaying template information in card format",
+          "status": "done"
+        },
+        {
+          "id": "15.9",
+          "title": "Implement TemplateShareModal.tsx",
+          "description": "Create modal component for sharing templates with other users via email",
+          "status": "done"
+        },
+        {
+          "id": "15.10",
+          "title": "Test template saving and loading",
+          "description": "Verify that templates can be properly saved to and loaded from Firestore",
+          "status": "done"
+        },
+        {
+          "id": "15.11",
+          "title": "Test parameterized query execution",
+          "description": "Verify that queries with parameters are correctly executed when a template is loaded",
+          "status": "done"
+        },
+        {
+          "id": "15.12",
+          "title": "Test template sharing functionality",
+          "description": "Verify email-based sharing and shared link generation works correctly between users",
+          "status": "done"
+        },
+        {
+          "id": "15.13",
+          "title": "Test template versioning",
+          "description": "Verify that template versions are properly managed using QueryTemplateVersionModel",
+          "status": "done"
+        },
+        {
+          "id": "15.14",
+          "title": "Test search and filtering",
+          "description": "Verify that templates can be searched and filtered by tags and search terms",
+          "status": "done"
+        },
+        {
+          "id": "15.15",
+          "title": "Test query builder integration",
+          "description": "Verify that templates can be properly executed in the query builder",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Implement Query Results Grid and Filtering",
+      "description": "Create a results grid with filtering, sorting, and customization options.",
+      "details": "1. Create ResultsGrid component using TanStack Table\n2. Implement dynamic column generation based on query results\n3. Add column sorting and filtering\n4. Create column customization (width, visibility, order)\n5. Implement results pagination\n6. Add row highlighting based on conditions\n7. Create cell formatting based on data types\n8. Implement clipboard copy functionality\n9. Add row detail view\n10. Create results filtering within the grid",
+      "testStrategy": "Test results grid with various result sets. Verify sorting and filtering work correctly. Test pagination with large result sets. Verify column customization persists. Test performance with large datasets.",
+      "priority": "high",
+      "dependencies": [
+        11,
+        13
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 17,
+      "title": "Implement Data Visualization with Recharts",
+      "description": "Create data visualization components for query results using Recharts.",
+      "details": "1. Install Recharts: `npm install recharts`\n2. Create visualization selector component\n3. Implement chart type selection (bar, line, pie, etc.)\n4. Create chart configuration interface\n5. Add data mapping functionality (X-axis, Y-axis, series)\n6. Implement chart customization options\n7. Create chart export functionality (PNG, SVG)\n8. Add interactive features (tooltips, zoom, click events)\n9. Implement dashboard layout for multiple charts\n10. Create chart saving and sharing functionality",
+      "testStrategy": "Test chart generation with various data types. Verify chart customization options work correctly. Test chart export functionality. Verify interactive features work as expected. Test performance with large datasets.",
+      "priority": "medium",
+      "dependencies": [
+        16
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 18,
+      "title": "Implement Data Export Functionality",
+      "description": "Create functionality to export query results in various formats (CSV, Excel, JSON).",
+      "details": "1. Install export libraries: `npm install xlsx file-saver`\n2. Create ExportService with format selection\n3. Implement CSV export functionality\n4. Add Excel export with formatting\n5. Create JSON export functionality\n6. Implement SQL export (INSERT statements)\n7. Add export configuration options\n8. Create progress indicator for large exports\n9. Implement server-side export for very large datasets\n10. Add scheduled export functionality",
+      "testStrategy": "Test export functionality with various data sizes. Verify exported files have correct format and content. Test large dataset exports. Verify scheduled exports work correctly.",
+      "priority": "medium",
+      "dependencies": [
+        16
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 19,
+      "title": "Implement Field Value Distribution Visualization",
+      "description": "Create functionality to visualize the distribution of values in database fields.",
+      "details": "1. Create Firebase Cloud Function to calculate field value distribution\n2. Implement distribution calculation for different data types\n3. Create distribution visualization component\n4. Add chart type selection based on data type\n5. Implement filtering and drill-down functionality\n6. Create outlier detection\n7. Add statistical summary (min, max, avg, median, etc.)\n8. Implement time-based trend analysis for date fields\n9. Create comparison between multiple fields\n10. Add export functionality for distribution data",
+      "testStrategy": "Test distribution calculation with various data types. Verify visualization renders correctly. Test filtering and drill-down functionality. Verify statistical calculations are correct. Test performance with large datasets.",
+      "priority": "low",
+      "dependencies": [
+        11,
+        17
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 20,
+      "title": "Implement Firebase Cloud Functions for Database Operations",
+      "description": "Create and deploy Cloud Functions for secure database operations and query execution.",
+      "status": "done",
+      "dependencies": [
+        2,
+        7,
+        8
+      ],
+      "priority": "high",
+      "details": "Most of the Firebase Cloud Functions have already been implemented as part of Tasks 7 and 8. The following functions are now in place:\n\n1. Database connection testing (testConnection)\n2. Database connection management (saveDbConnection, getDbConnections, deleteDbConnection)\n3. Query execution with parameters (executeQuery)\n4. Database schema retrieval (getDatabaseSchema)\n5. Schema version management (getSchemaVersions, getSchemaVersion, getSchemaChanges)\n\nAll functions include:\n- Security authentication and permission checks\n- Error handling and logging\n- Caching mechanisms\n- Pagination where appropriate",
+      "testStrategy": "All functions have been tested with various inputs. Security rules have been verified to prevent unauthorized access. Error handling has been confirmed to work correctly. Performance has been tested with large operations, and concurrent function execution has been validated.",
+      "subtasks": []
+    },
+    {
+      "id": 21,
+      "title": "Implement User Activity Logging",
+      "description": "Create functionality to log user activities and query executions for auditing.",
+      "details": "1. Design activity log data structure in Firestore\n2. Create logging service for client-side events\n3. Implement server-side logging in Cloud Functions\n4. Add query execution logging with parameters and results summary\n5. Create activity log viewer component\n6. Implement filtering and searching in logs\n7. Add log export functionality\n8. Create log retention policy\n9. Implement log analysis and statistics\n10. Add alerting for suspicious activities",
+      "testStrategy": "Test logging of various user activities. Verify logs contain all required information. Test log viewer filtering and searching. Verify log retention policy works correctly. Test performance with large log volumes.",
+      "priority": "low",
+      "dependencies": [
+        2,
+        5,
+        13
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 22,
+      "title": "Implement User Preferences and Settings",
+      "description": "Create functionality for users to customize their experience with saved preferences.",
+      "details": "1. Design user preferences data structure in Firestore\n2. Create settings page UI\n3. Implement theme selection (light/dark mode)\n4. Add language preference\n5. Create display preferences (table sizes, font sizes, etc.)\n6. Implement default view settings\n7. Add notification preferences\n8. Create keyboard shortcut customization\n9. Implement settings export/import\n10. Add settings sync across devices",
+      "testStrategy": "Test saving and loading preferences. Verify preferences apply correctly throughout the application. Test preferences sync across devices. Verify export/import functionality works correctly.",
+      "priority": "low",
+      "dependencies": [
+        5,
+        6
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 23,
+      "title": "Implement Query Scheduling and Notifications",
+      "description": "Create functionality to schedule queries and receive notifications about results.",
+      "details": "1. Design scheduled query data structure in Firestore\n2. Create scheduling interface with recurrence options\n3. Implement Cloud Function for executing scheduled queries\n4. Add result storage in Firestore\n5. Create notification service using Firebase Cloud Messaging\n6. Implement email notifications using Firebase Extensions\n7. Add condition-based alerts\n8. Create notification history and management\n9. Implement notification preferences\n10. Add webhook support for external integrations",
+      "testStrategy": "Test query scheduling with various recurrence patterns. Verify scheduled queries execute correctly. Test notifications through different channels. Verify condition-based alerts trigger correctly. Test webhook integrations.",
+      "priority": "low",
+      "dependencies": [
+        15,
+        20
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 24,
+      "title": "Implement Application Dashboard",
+      "description": "Create a dashboard with summary information, recent activities, and quick access to common functions.",
+      "details": "1. Design dashboard layout with widgets\n2. Create recent connections widget\n3. Implement recent queries widget\n4. Add saved templates widget\n5. Create database statistics widget\n6. Implement activity log summary\n7. Add quick action buttons\n8. Create notification center\n9. Implement dashboard customization\n10. Add dashboard sharing functionality",
+      "testStrategy": "Test dashboard rendering with various user data. Verify widgets display correct information. Test dashboard customization. Verify quick actions work correctly. Test performance with many widgets.",
+      "priority": "medium",
+      "dependencies": [
+        5,
+        9,
+        16,
+        21
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 25,
+      "title": "Implement Firebase Hosting and Deployment Pipeline",
+      "description": "Set up Firebase Hosting and create a deployment pipeline for continuous integration.",
+      "details": "1. Configure Firebase Hosting settings\n2. Create build script for production deployment\n3. Set up environment-specific configuration\n4. Implement CI/CD pipeline using GitHub Actions\n5. Create staging and production environments\n6. Add deployment approval process\n7. Implement version tagging\n8. Create rollback functionality\n9. Add performance monitoring\n10. Implement error tracking and reporting",
+      "testStrategy": "Test deployment to staging and production environments. Verify environment-specific configuration works correctly. Test rollback functionality. Verify performance monitoring captures relevant metrics. Test error tracking and reporting.",
+      "priority": "medium",
+      "dependencies": [
+        1,
+        2,
+        20
+      ],
+      "status": "done",
+      "subtasks": []
+    },
+    {
+      "id": 26,
+      "title": "Implement Real Database Connection with Firebase Cloud Functions",
+      "description": "Implement real database connection functionality using Firebase Cloud Functions to test and store MariaDB connections, replacing the existing demo functionality with actual working features.",
+      "details": "This task involves creating a production-ready database connection system using Firebase Cloud Functions to interact with MariaDB databases. The implementation should include:\n\n1. Create Firebase Cloud Functions API endpoints for:\n   - Testing database connections (verifying host, port, username, password, database name)\n   - Storing validated connection information securely\n   - Retrieving saved connection information\n   - Deleting connections when needed\n\n2. Implement actual MariaDB connection logic using the mysql2 package:\n   - Handle connection pooling appropriately\n   - Implement proper error handling for connection failures\n   - Add timeout configurations for connection attempts\n   - Support for SSL/TLS secure connections\n\n3. Develop frontend integration to call Firebase Functions:\n   - Create service modules to interact with the Firebase Functions\n   - Implement proper error handling and loading states in the UI\n   - Add connection status indicators in the interface\n\n4. Implement encryption for secure storage of connection information:\n   - Use appropriate encryption algorithms for sensitive data (passwords, etc.)\n   - Store encryption keys securely\n   - Implement decryption functionality when retrieving connection information\n\n5. Connect the existing demo UI with the real functionality:\n   - Replace mock API calls with actual Firebase Function calls\n   - Update UI components to handle real-world connection scenarios\n   - Ensure backward compatibility with existing UI components\n\nThe implementation should follow security best practices and ensure that database credentials are never exposed in client-side code or logs.",
+      "testStrategy": "Testing for this task should be comprehensive and cover both unit tests and integration tests:\n\n1. Unit Tests:\n   - Test the Firebase Cloud Functions in isolation using the Firebase emulator\n   - Verify encryption/decryption functions work correctly with various input types\n   - Test error handling for various connection failure scenarios\n   - Mock MariaDB connections to test the connection logic without requiring actual databases\n\n2. Integration Tests:\n   - Set up test MariaDB instances (can use Docker containers)\n   - Test the complete flow from UI to database connection\n   - Verify successful connections with valid credentials\n   - Verify appropriate error messages with invalid credentials\n   - Test connection persistence (connections remain available after page refresh)\n\n3. Security Testing:\n   - Verify that database credentials are properly encrypted in storage\n   - Ensure no sensitive information appears in logs or client-side code\n   - Test access controls to ensure only authorized users can access connection information\n\n4. Performance Testing:\n   - Measure connection establishment time\n   - Test with multiple simultaneous connection attempts\n   - Verify connection pooling works correctly under load\n\n5. User Acceptance Testing:\n   - Verify the UI provides clear feedback during connection attempts\n   - Test the complete workflow from adding a connection to using it for queries\n   - Compare with the previous demo functionality to ensure all features are preserved\n\nDocument all test cases and results, including screenshots of successful connections and proper error handling.",
+      "status": "pending",
+      "dependencies": [
+        "7"
+      ],
+      "priority": "high",
+      "subtasks": []
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+# Task ID: 13
+# Title: Implement Basic Query Builder Interface
+# Status: done
+# Dependencies: 8, 9, 12
+# Priority: high
+# Description: Create the foundation for the visual query builder with condition creation and table selection.
+# Details:
+1. Design query builder UI with drag-and-drop functionality
+2. Create table selector component
+3. Implement field selector based on selected table
+4. Create condition builder component with operators appropriate for each data type
+5. Implement value input components for different data types
+6. Add AND/OR condition grouping
+7. Create SQL preview component
+8. Implement basic query validation
+9. Add query execution functionality
+10. Create query history tracking
+
+# Test Strategy:
+Test query building with various condition types. Verify SQL generation is correct. Test query execution with different conditions. Verify error handling for invalid queries. Test query history functionality.
+
+# Subtasks:
+## 1. Create basic query builder UI [done]
+### Dependencies: None
+### Description: Develop the UI for basic query building with table selection and simple conditions
+### Details:
+
+
+## 2. Implement drag-and-drop condition builder [done]
+### Dependencies: None
+### Description: Implement drag-and-drop functionality for building query conditions
+### Details:
+
+
+## 3. Develop SQL generation logic [done]
+### Dependencies: None
+### Description: Create SQL query generation logic to convert visual query builder state to valid MariaDB SQL
+### Details:
+
+
+## 4. Create field validation logic [done]
+### Dependencies: None
+### Description: Implement field value validation based on database field types to ensure valid query conditions
+### Details:
+
+
+## 5. Create SQL viewer/editor [done]
+### Dependencies: None
+### Description: Develop UI for viewing and editing generated SQL queries with syntax highlighting
+### Details:
+
+
+## 6. Implement condition builder component [done]
+### Dependencies: None
+### Description: Create the condition builder component with support for various operators and value types
+### Details:
+Implement the ConditionBuilder.tsx component with support for different operators (=, !=, >, >=, <, <=, LIKE, NOT LIKE, IN, NOT IN, IS NULL, IS NOT NULL, BETWEEN), logical operators (AND, OR), and appropriate value inputs based on the selected operator.
+
+## 7. Implement column selector component [done]
+### Dependencies: None
+### Description: Create the column selector component for selecting columns from tables with optional aliases and aggregate functions
+### Details:
+Implement the ColumnSelector.tsx component with support for selecting columns from available tables, adding aliases, and applying aggregate functions (COUNT, SUM, AVG, MIN, MAX).
+
+## 8. Implement SQL preview and editing component [done]
+### Dependencies: None
+### Description: Create the SQL preview component with syntax highlighting and manual editing capabilities
+### Details:
+Implement the SqlPreview.tsx component with features for displaying generated SQL, manual editing, copying to clipboard, and executing queries.
+
+## 9. Implement query results display component [done]
+### Dependencies: None
+### Description: Create the component for displaying query execution results in a tabular format
+### Details:
+Implement the QueryResults.tsx component with features for displaying query results in a table, handling loading states, error display, and CSV export functionality.
+
+## 10. Create main query builder page component [done]
+### Dependencies: None
+### Description: Implement the main page component that integrates all query builder components
+### Details:
+Implement the QueryBuilderPage.tsx component that integrates TableSelector, ColumnSelector, ConditionBuilder, SqlPreview, and QueryResults components with tab navigation.
+
+## 11. Implement query execution Cloud Function [done]
+### Dependencies: None
+### Description: Create the Cloud Function for executing SQL queries with proper authentication and logging
+### Details:
+Implement the executeQuery Cloud Function that handles SQL query execution, user authentication, permission checking, query logging, and result processing with size limitations.
+
+## 12. Complete ConditionBuilder component implementation [done]
+### Dependencies: 13.6
+### Description: Finish implementing the ConditionBuilder component with all required functionality
+### Details:
+Complete the implementation of the ConditionBuilder.tsx component with state management, form handling, condition addition/removal, logical operator selection, and UI rendering for active conditions.
+
+## 13. Implement QueryPreview component [done]
+### Dependencies: 13.8
+### Description: Create the QueryPreview component for SQL preview and execution
+### Details:
+Implement the QueryPreview.tsx component with SQL generation, refresh, copy, and execution functionality that connects to the Cloud Function.
+
+## 14. Enhance QueryResults component [done]
+### Dependencies: 13.9
+### Description: Implement the QueryResults component with sorting, pagination, and CSV export
+### Details:
+Create the QueryResults.tsx component with table display, column sorting, pagination controls, and CSV export functionality using @tanstack/react-table.
+
+## 15. Implement main QueryBuilder component [done]
+### Dependencies: 13.6, 13.7, 13.12, 13.13
+### Description: Create the main QueryBuilder component that integrates all subcomponents
+### Details:
+Implement the QueryBuilder.tsx component that combines TableSelector, ColumnSelector, ConditionBuilder, QueryPreview, and handles database schema loading.
+
+## 16. Complete QueryBuilderPage implementation [done]
+### Dependencies: 13.10, 13.15
+### Description: Finish the QueryBuilderPage component with connection loading and navigation
+### Details:
+Complete the QueryBuilderPage.tsx implementation with connection loading, error handling, navigation controls, and integration of the QueryBuilder and QueryResults components.
+

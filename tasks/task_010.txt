@@ -1,0 +1,21 @@
+# Task ID: 10
+# Title: Implement Entity-Relationship Diagram (ERD) Visualization
+# Status: done
+# Dependencies: 8, 9
+# Priority: medium
+# Description: Create interactive ERD visualization to display relationships between database tables.
+# Details:
+1. Install React Flow: `npm install reactflow`
+2. Create ERD component using React Flow
+3. Generate nodes from table information
+4. Generate edges from foreign key relationships
+5. Implement interactive features (zoom, pan, select)
+6. Add ability to customize diagram layout
+7. Create mini-map for navigation in large diagrams
+8. Implement node grouping for related tables
+9. Add diagram export functionality (PNG, SVG, JSON)
+10. Create diagram saving and loading feature
+11. Implement diagram sharing functionality
+
+# Test Strategy:
+Test ERD rendering with various database schemas. Verify relationships are correctly displayed. Test interactive features like zoom and pan. Verify export functionality produces correct output. Test performance with large schemas.

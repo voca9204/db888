@@ -1,0 +1,202 @@
+# Task ID: 7
+# Title: Implement Database Connection Management
+# Status: done
+# Dependencies: 2, 5, 6
+# Priority: high
+# Description: Create functionality to manage and test MariaDB connections with secure credential storage.
+# Details:
+1. Create Firebase Cloud Function for MariaDB connection testing
+2. Install MariaDB client in Cloud Functions: `npm install mariadb`
+3. Install additional packages: `npm install dotenv crypto-js`
+4. Implement connection form UI with fields for host, port, username, password, database, and SSL option
+5. Create connection testing functionality that calls the Cloud Function
+6. Store connection information securely in Firestore with encryption for sensitive fields
+7. Implement connection management UI (add, edit, delete, select active connection)
+8. Create connection status indicator
+9. Implement connection error handling and user feedback
+10. Add ability to save multiple connection profiles
+11. Create connection history tracking
+12. Implement database schema retrieval functionality
+
+# Test Strategy:
+Test connection to valid and invalid MariaDB instances. Verify error handling for various connection failure scenarios. Test encryption of sensitive connection data. Verify connection profiles can be saved, loaded, and deleted. Test database schema retrieval functionality with different database structures.
+
+# Subtasks:
+## 1. Develop connection management UI [done]
+### Dependencies: None
+### Description: Create a connection management interface for storing and organizing MariaDB connection details
+### Details:
+Implement ConnectionsPage component with the following features:
+1. Display list of saved connections
+2. Add buttons for exploring, testing, and deleting connections
+3. Create NewConnectionPage component with form fields for connection details
+4. Include fields for name, host, port, database, username, password, and SSL option
+5. Add validation and error handling for form inputs
+6. Implement navigation between connection list and creation form
+
+## 2. Implement secure credential storage [done]
+### Dependencies: None
+### Description: Implement encryption for sensitive connection information using Firebase and secure storage methods
+### Details:
+1. Create encryption utility in Cloud Functions:
+```typescript
+// functions/src/utils/encryption.ts
+import * as CryptoJS from 'crypto-js';
+
+const SECRET_KEY = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
+
+export const encrypt = (text: string): string => {
+  return CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
+};
+
+export const decrypt = (ciphertext: string): string => {
+  const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
+  return bytes.toString(CryptoJS.enc.Utf8);
+};
+```
+2. Use encryption for password storage in Firestore
+3. Implement secure password handling in Cloud Functions
+4. Never return decrypted passwords to the client
+
+## 3. Create connection testing feature [done]
+### Dependencies: None
+### Description: Create connection testing functionality to verify database connections before saving
+### Details:
+1. Implement testDbConnection Cloud Function:
+```typescript
+// In functions/src/index.ts
+export const testDbConnection = functions.https.onCall(async (data, context) => {
+  // Authentication check
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'The function must be called while authenticated.'
+    );
+  }
+
+  try {
+    const result = await testConnection({
+      host: data.host,
+      port: data.port,
+      database: data.database,
+      user: data.user,
+      password: data.password,
+      ssl: data.ssl
+    });
+    
+    return { success: true };
+  } catch (error) {
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+```
+2. Add test connection button in the UI
+3. Display connection test results to the user
+4. Handle connection errors gracefully
+
+## 4. Implement server-side database connector [done]
+### Dependencies: None
+### Description: Develop Cloud Functions for secure database connection and operations from Firebase to MariaDB
+### Details:
+1. Create database service with connection pool management:
+```typescript
+// functions/src/services/database.ts
+import * as mariadb from 'mariadb';
+import { decrypt } from '../utils/encryption';
+import { logger } from 'firebase-functions';
+
+// Connection pool cache
+const connectionPools: Record<string, mariadb.Pool> = {};
+
+// Get or create connection pool
+export const getConnectionPool = async (config: ConnectionConfig): Promise<mariadb.Pool> => {
+  const id = getConnectionId(config);
+  
+  if (connectionPools[id]) {
+    return connectionPools[id];
+  }
+  
+  try {
+    // Create connection pool
+    const pool = mariadb.createPool({
+      host: config.host,
+      port: config.port,
+      database: config.database,
+      user: config.user,
+      password: config.password,
+      ssl: config.ssl,
+      connectionLimit: 5,
+      connectTimeout: 10000,
+      acquireTimeout: 10000,
+    });
+    
+    // Cache connection pool
+    connectionPools[id] = pool;
+    return pool;
+  } catch (error) {
+    logger.error('Failed to create connection pool', error);
+    throw new Error(`Failed to create database connection: ${error.message}`);
+  }
+};
+```
+2. Implement connection testing function
+3. Create database schema retrieval functionality
+4. Add functions to handle encrypted connection configs
+
+## 5. Create connection profile management [done]
+### Dependencies: None
+### Description: Implement connection profiles with the ability to save, edit, and delete connection configurations
+### Details:
+1. Define database connection interfaces:
+```typescript
+// src/types/database.ts
+export interface DbConnectionConfig {
+  id: string;
+  name: string;
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string; // Encrypted when stored
+  ssl: boolean;
+  createdAt: number;
+  updatedAt: number;
+  lastUsed?: number;
+  userId: string;
+}
+```
+2. Implement saveDbConnection Cloud Function
+3. Create functions to load, update, and delete connection profiles
+4. Track connection usage history
+5. Implement UI for managing connection profiles
+
+## 6. Implement database schema retrieval [done]
+### Dependencies: None
+### Description: Create functionality to retrieve and display database schema information including tables, columns, keys, and indexes
+### Details:
+1. Define schema interfaces:
+```typescript
+export interface DbTable {
+  name: string;
+  schema: string;
+  type: string;
+  columns: DbColumn[];
+  primaryKey?: string[];
+  foreignKeys?: DbForeignKey[];
+  indexes?: DbIndex[];
+  comment?: string;
+}
+
+export interface DbColumn {
+  name: string;
+  type: string;
+  nullable: boolean;
+  defaultValue?: string;
+  comment?: string;
+  extra?: string;
+}
+```
+2. Implement getDbSchema Cloud Function
+3. Create SQL queries to retrieve schema information
+4. Add UI components to display database structure
+

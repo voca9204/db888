@@ -1,0 +1,21 @@
+# Task ID: 14
+# Title: Implement Advanced Query Builder with Joins
+# Status: done
+# Dependencies: 13
+# Priority: medium
+# Description: Extend the query builder to support multi-table joins and complex conditions.
+# Details:
+1. Implement join type selection (INNER, LEFT, RIGHT, FULL)
+2. Create join condition builder
+3. Add support for multiple joins
+4. Implement automatic join path suggestion based on foreign keys
+5. Create visual representation of join relationships
+6. Add support for subqueries
+7. Implement aggregate functions (COUNT, SUM, AVG, etc.)
+8. Add GROUP BY functionality
+9. Implement HAVING conditions
+10. Create ORDER BY builder
+11. Add LIMIT and OFFSET controls
+
+# Test Strategy:
+Test join queries with various join types. Verify complex queries generate correct SQL. Test aggregate functions and grouping. Verify subqueries work correctly. Test performance with complex queries.

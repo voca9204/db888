@@ -1,0 +1,58 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is accessing their own data
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is an admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // User files rules
+    match /users/{userId}/{allPaths=**} {
+      // User can access their own files
+      // Admins can access any user's files
+      allow read: if isUser(userId) || isAdmin();
+      
+      // User can write their own files
+      // File size limited to 10MB
+      allow write: if isUser(userId) && 
+                    request.resource.size <= 10 * 1024 * 1024;
+      
+      // User can delete their own files
+      // Admins can delete any user's files
+      allow delete: if isUser(userId) || isAdmin();
+    }
+    
+    // Exported query results rules
+    match /exports/{userId}/{allPaths=**} {
+      // User can access their own exports
+      // Admins can access any user's exports
+      allow read: if isUser(userId) || isAdmin();
+      
+      // User can write their own exports
+      // Export size limited to 50MB
+      allow write: if isUser(userId) && 
+                    request.resource.size <= 50 * 1024 * 1024;
+      
+      // User can delete their own exports
+      // Admins can delete any user's exports
+      allow delete: if isUser(userId) || isAdmin();
+    }
+    
+    // Default: deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

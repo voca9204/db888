@@ -1,0 +1,120 @@
+# Task ID: 26
+# Title: Implement Real Database Connection with Firebase Cloud Functions
+# Status: pending
+# Dependencies: 7
+# Priority: high
+# Description: Implement real database connection functionality using Firebase Cloud Functions to test and store MariaDB connections, replacing the existing demo functionality with actual working features.
+# Details:
+This task involves creating a production-ready database connection system using Firebase Cloud Functions to interact with MariaDB databases. The implementation should include:
+
+1. Create Firebase Cloud Functions API endpoints for:
+   - Testing database connections (verifying host, port, username, password, database name)
+   - Storing validated connection information securely
+   - Retrieving saved connection information
+   - Deleting connections when needed
+
+2. Implement actual MariaDB connection logic using the mysql2 package:
+   - Handle connection pooling appropriately
+   - Implement proper error handling for connection failures
+   - Add timeout configurations for connection attempts
+   - Support for SSL/TLS secure connections
+
+3. Develop frontend integration to call Firebase Functions:
+   - Create service modules to interact with the Firebase Functions
+   - Implement proper error handling and loading states in the UI
+   - Add connection status indicators in the interface
+
+4. Implement encryption for secure storage of connection information:
+   - Use appropriate encryption algorithms for sensitive data (passwords, etc.)
+   - Store encryption keys securely
+   - Implement decryption functionality when retrieving connection information
+
+5. Connect the existing demo UI with the real functionality:
+   - Replace mock API calls with actual Firebase Function calls
+   - Update UI components to handle real-world connection scenarios
+   - Ensure backward compatibility with existing UI components
+
+The implementation should follow security best practices and ensure that database credentials are never exposed in client-side code or logs.
+
+# Test Strategy:
+Testing for this task should be comprehensive and cover both unit tests and integration tests:
+
+1. Unit Tests:
+   - Test the Firebase Cloud Functions in isolation using the Firebase emulator
+   - Verify encryption/decryption functions work correctly with various input types
+   - Test error handling for various connection failure scenarios
+   - Mock MariaDB connections to test the connection logic without requiring actual databases
+
+2. Integration Tests:
+   - Set up test MariaDB instances (can use Docker containers)
+   - Test the complete flow from UI to database connection
+   - Verify successful connections with valid credentials
+   - Verify appropriate error messages with invalid credentials
+   - Test connection persistence (connections remain available after page refresh)
+
+3. Security Testing:
+   - Verify that database credentials are properly encrypted in storage
+   - Ensure no sensitive information appears in logs or client-side code
+   - Test access controls to ensure only authorized users can access connection information
+
+4. Performance Testing:
+   - Measure connection establishment time
+   - Test with multiple simultaneous connection attempts
+   - Verify connection pooling works correctly under load
+
+5. User Acceptance Testing:
+   - Verify the UI provides clear feedback during connection attempts
+   - Test the complete workflow from adding a connection to using it for queries
+   - Compare with the previous demo functionality to ensure all features are preserved
+
+Document all test cases and results, including screenshots of successful connections and proper error handling.
+
+# Subtasks:
+## 1. Set up Firebase Cloud Functions project structure [pending]
+### Dependencies: None
+### Description: Initialize and configure the Firebase Cloud Functions project with necessary dependencies and structure for MariaDB integration.
+### Details:
+Create a new Firebase Functions project or extend the existing one. Install required dependencies including firebase-admin, firebase-functions, and mysql2. Set up the project structure with separate files for database connection logic, API endpoints, and encryption utilities. Configure environment variables for sensitive information.
+
+## 2. Implement encryption utilities for secure credential storage [pending]
+### Dependencies: 26.1
+### Description: Create utility functions to encrypt and decrypt sensitive database connection information before storing in Firebase.
+### Details:
+Implement encryption/decryption utilities using a secure algorithm (AES-256). Create functions for encrypting connection passwords and other sensitive data. Store encryption keys in Firebase environment secrets, not in the codebase. Implement functions to verify and validate encrypted data integrity.
+
+## 3. Create MariaDB connection manager module [pending]
+### Dependencies: 26.1
+### Description: Develop a core module to handle MariaDB connection creation, testing, and management using the mysql2 package.
+### Details:
+Implement a connection manager that handles connection pooling, timeout configurations, and SSL/TLS options. Create functions to test connections with provided credentials. Implement proper error handling for various connection failure scenarios. Add support for connection parameter validation before attempting connections.
+
+## 4. Implement Cloud Function for testing database connections [pending]
+### Dependencies: 26.2, 26.3
+### Description: Create a Firebase Cloud Function endpoint that tests MariaDB connection parameters without storing them.
+### Details:
+Create a testConnection function that accepts host, port, username, password, and database parameters. Use the MariaDB connection manager to attempt a connection with the provided parameters. Return appropriate success/failure responses with detailed error information when needed. Implement request validation to ensure all required parameters are provided.
+
+## 5. Implement Cloud Functions for connection CRUD operations [pending]
+### Dependencies: 26.2, 26.3, 26.4
+### Description: Create Firebase Cloud Functions to store, retrieve, update, and delete database connection information.
+### Details:
+Implement saveConnection function that encrypts sensitive data before storage. Create getConnections function to retrieve and decrypt stored connections. Implement deleteConnection function to remove stored connections. Add updateConnection function to modify existing connections. Use Firebase Firestore or Realtime Database for storage with appropriate security rules.
+
+## 6. Create frontend service for Firebase Functions integration [pending]
+### Dependencies: 26.4, 26.5
+### Description: Develop frontend service modules that interface with the Firebase Cloud Functions for database operations.
+### Details:
+Create a DatabaseService class with methods corresponding to each Cloud Function. Implement proper error handling and response parsing. Add loading state management for asynchronous operations. Create typed interfaces for request/response data. Ensure authentication headers are properly included if required.
+
+## 7. Update UI components to use real database connections [pending]
+### Dependencies: 26.6
+### Description: Modify existing UI components to use the real Firebase Functions instead of demo/mock implementations.
+### Details:
+Replace mock API calls in connection testing UI with real Firebase Function calls. Update connection management screens to use the new CRUD operations. Implement proper loading states and error handling in the UI. Add connection status indicators that reflect real connection states. Ensure backward compatibility with existing UI component structure.
+
+## 8. Implement comprehensive error handling and user feedback [pending]
+### Dependencies: 26.7
+### Description: Enhance the application with detailed error handling, logging, and user feedback for database operations.
+### Details:
+Create a consistent error handling strategy across both backend and frontend. Implement detailed error messages that are user-friendly but don't expose sensitive information. Add client-side validation to prevent unnecessary function calls. Implement logging for connection attempts and failures (without logging sensitive data). Add toast notifications or alert components for operation success/failure.
+

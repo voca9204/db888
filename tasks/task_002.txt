@@ -1,0 +1,80 @@
+# Task ID: 2
+# Title: Set Up Firebase Project and Configuration
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Configure Firebase services for authentication, Firestore, Cloud Functions, and hosting using the existing Firebase project.
+# Details:
+The Firebase project has already been created with the following configuration:
+
+```javascript
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyD2RY02pN2RrhT8Qt2hTSEilRqV4JAbCR0",
+  authDomain: "db888-67827.firebaseapp.com",
+  projectId: "db888-67827",
+  storageBucket: "db888-67827.firebasestorage.app",
+  messagingSenderId: "888497598316",
+  appId: "1:888497598316:web:ad0cb0364d906c26658d49"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+```
+
+Remaining steps:
+1. Install Firebase CLI: `npm install -g firebase-tools`
+2. Login to Firebase: `firebase login`
+3. Initialize Firebase in the project: `firebase init`
+4. Select Firestore, Functions, Hosting, and Authentication
+5. Install Firebase SDK: `npm install firebase`
+6. Create src/firebase/config.ts file with the provided Firebase configuration
+7. Set up environment variables for Firebase config
+8. Configure Firebase security rules for Firestore
+
+# Test Strategy:
+Verify Firebase connection by testing authentication flow. Confirm Firestore read/write operations work in development environment. Ensure environment variables are properly loaded.
+
+# Subtasks:
+## 1. Create Firebase project [done]
+### Dependencies: None
+### Description: Create a new Firebase project in the Firebase Console for the DB Master application
+### Details:
+Firebase project has already been created with ID: db888-67827
+
+## 2. Set up Firebase Authentication [done]
+### Dependencies: None
+### Description: Enable and configure Firebase Authentication with email/password, and optionally Google authentication methods
+### Details:
+Use the existing Firebase project (db888-67827) to configure authentication methods in the Firebase Console
+
+## 3. Configure Firestore database [done]
+### Dependencies: None
+### Description: Set up Firestore database with initial collections for users, connections, queryTemplates, and settings
+### Details:
+Use the existing Firebase project (db888-67827) to set up Firestore collections and structure
+
+## 4. Set up Firebase Cloud Functions [done]
+### Dependencies: None
+### Description: Set up Firebase Cloud Functions environment with Node.js and TypeScript for server-side operations
+### Details:
+Initialize Cloud Functions with the existing Firebase project configuration
+
+## 5. Integrate Firebase with React application [done]
+### Dependencies: None
+### Description: Install and configure Firebase SDKs in the React application, setting up environment variables for Firebase configuration
+### Details:
+Use the provided Firebase configuration object to set up the connection in src/firebase/config.ts
+
+## 6. Set up Firestore security rules [done]
+### Dependencies: None
+### Description: Configure Firebase security rules for Firestore to ensure proper access control based on user roles
+### Details:
+Create appropriate security rules for the existing Firebase project (db888-67827)
+
+## 7. Create environment variables for Firebase config [done]
+### Dependencies: None
+### Description: Set up environment variables to securely store the Firebase configuration values
+### Details:
+Create .env file with the Firebase configuration values from the provided config object, ensuring API keys are not exposed in the repository
+

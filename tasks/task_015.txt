@@ -1,0 +1,112 @@
+# Task ID: 15
+# Title: Implement Query Templates and Saving
+# Status: done
+# Dependencies: 2, 13, 14
+# Priority: medium
+# Description: Create functionality to save, load, and share query templates with parameterization.
+# Details:
+1. Design template data structure with parameters
+2. Create template saving functionality to Firestore
+3. Implement template loading and execution
+4. Add parameter definition interface
+5. Create parameter input form generation
+6. Implement template sharing with other users
+7. Add template categories and tags
+8. Create template search and filtering
+9. Implement template versioning
+10. Add template export and import functionality
+
+# Test Strategy:
+Test template saving and loading. Verify parameterized queries execute correctly with the implemented parameterUtils.ts. Test template sharing between users using the sharing modal and email-based functionality. Verify template versioning works correctly with QueryTemplateVersionModel. Test search and filtering functionality in the QueryTemplates.tsx page. Validate parameter extraction, application, and validation functions.
+
+# Subtasks:
+## 15.1. Implement QueryTemplateVersionModel.ts [done]
+### Dependencies: None
+### Description: Create model for template version management functionality
+### Details:
+
+
+## 15.2. Implement QueryTemplateShareModel.ts [done]
+### Dependencies: None
+### Description: Create model for template sharing functionality
+### Details:
+
+
+## 15.3. Implement parameter utilities [done]
+### Dependencies: None
+### Description: Create parameterUtils.ts with functions for parameter extraction, application, and validation
+### Details:
+
+
+## 15.4. Implement date formatting utilities [done]
+### Dependencies: None
+### Description: Create dateUtils.ts for template date display functionality
+### Details:
+
+
+## 15.5. Implement QueryTemplates.tsx page [done]
+### Dependencies: None
+### Description: Create page for displaying template list with search and filtering capabilities
+### Details:
+
+
+## 15.6. Implement SaveTemplateModal.tsx [done]
+### Dependencies: None
+### Description: Create modal component for saving and editing templates
+### Details:
+
+
+## 15.7. Implement ParameterEditor.tsx [done]
+### Dependencies: None
+### Description: Create component for editing template parameters
+### Details:
+
+
+## 15.8. Implement TemplateCard.tsx [done]
+### Dependencies: None
+### Description: Create component for displaying template information in card format
+### Details:
+
+
+## 15.9. Implement TemplateShareModal.tsx [done]
+### Dependencies: None
+### Description: Create modal component for sharing templates with other users via email
+### Details:
+
+
+## 15.10. Test template saving and loading [done]
+### Dependencies: None
+### Description: Verify that templates can be properly saved to and loaded from Firestore
+### Details:
+
+
+## 15.11. Test parameterized query execution [done]
+### Dependencies: None
+### Description: Verify that queries with parameters are correctly executed when a template is loaded
+### Details:
+
+
+## 15.12. Test template sharing functionality [done]
+### Dependencies: None
+### Description: Verify email-based sharing and shared link generation works correctly between users
+### Details:
+
+
+## 15.13. Test template versioning [done]
+### Dependencies: None
+### Description: Verify that template versions are properly managed using QueryTemplateVersionModel
+### Details:
+
+
+## 15.14. Test search and filtering [done]
+### Dependencies: None
+### Description: Verify that templates can be searched and filtered by tags and search terms
+### Details:
+
+
+## 15.15. Test query builder integration [done]
+### Dependencies: None
+### Description: Verify that templates can be properly executed in the query builder
+### Details:
+
+

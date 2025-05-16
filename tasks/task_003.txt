@@ -1,0 +1,291 @@
+# Task ID: 3
+# Title: Implement UI Framework with Tailwind CSS and Headless UI
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Set up and configure Tailwind CSS and Headless UI for the application's design system.
+# Details:
+1. Install Tailwind CSS: `npm install -D tailwindcss postcss autoprefixer`
+2. Initialize Tailwind: `npx tailwindcss init -p`
+3. Configure tailwind.config.js to scan React components
+4. Add Tailwind directives to main CSS file
+5. Install Headless UI: `npm install @headlessui/react`
+6. Install additional UI libraries: `npm install @tailwindcss/forms @tailwindcss/typography clsx lucide-react`
+7. Set up responsive breakpoints and custom theme configuration
+8. Implement dark/light mode theming with ThemeProvider
+9. Create basic layout components (Container, Card, Panel)
+10. Create reusable UI components (Button, Input, Select, Modal) with proper variants
+
+# Test Strategy:
+Create a UI component storybook or test page to verify all base components render correctly. Test responsive layouts across different screen sizes. Ensure accessibility standards are met using browser dev tools. Verify theme switching functionality works properly between light, dark, and system modes.
+
+# Subtasks:
+## 1. Install and configure Tailwind CSS [done]
+### Dependencies: None
+### Description: Install and configure Tailwind CSS with PostCSS in the Vite project
+### Details:
+```bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+Configure tailwind.config.js to scan React components in the project.
+
+## 2. Customize Tailwind theme [done]
+### Dependencies: None
+### Description: Set up custom Tailwind CSS theme with colors, fonts, and other design tokens appropriate for a database management UI
+### Details:
+Configure tailwind.config.js with the following settings:
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#6366f1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#312e81',
+          950: '#1e1b4b',
+        },
+        secondary: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+          950: '#020617',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter var', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+      },
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+}
+```
+
+## 3. Set up Headless UI components [done]
+### Dependencies: None
+### Description: Install and set up Headless UI components for accessible UI elements like modals, dropdowns, and tabs
+### Details:
+Install Headless UI and additional UI-related libraries:
+
+```bash
+npm install @headlessui/react
+npm install @tailwindcss/forms @tailwindcss/typography
+npm install clsx
+npm install lucide-react # Icon library
+```
+
+Add Tailwind directives to src/index.css:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+```
+
+## 4. Develop base UI components [done]
+### Dependencies: None
+### Description: Create reusable base UI components like buttons, inputs, cards, and form elements with proper styling
+### Details:
+Create base UI components with proper variants and styling. Example for Button component:
+
+```tsx
+// src/components/ui/Button.tsx
+import React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { clsx } from 'clsx';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
+      },
+      size: {
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 rounded-md px-3',
+        lg: 'h-11 rounded-md px-8',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    return (
+      <button
+        className={clsx(buttonVariants({ variant, size }), className)}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = 'Button';
+
+export { Button, buttonVariants };
+```
+
+Create similar components for Input, Select, Modal, Card, and other UI elements.
+
+## 5. Implement theme switching [done]
+### Dependencies: None
+### Description: Implement dark/light mode theming support with appropriate color schemes for each mode
+### Details:
+Create a ThemeProvider component to handle theme switching:
+
+```tsx
+// src/context/ThemeContext.tsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
+
+type Theme = 'dark' | 'light' | 'system';
+
+type ThemeProviderProps = {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+};
+
+type ThemeProviderState = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+};
+
+const initialState: ThemeProviderState = {
+  theme: 'system',
+  setTheme: () => null,
+};
+
+const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+
+export function ThemeProvider({
+  children,
+  defaultTheme = 'system',
+}: ThemeProviderProps) {
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem('theme') as Theme) || defaultTheme
+  );
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+
+    if (theme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+        .matches
+        ? 'dark'
+        : 'light';
+      root.classList.add(systemTheme);
+      return;
+    }
+
+    root.classList.add(theme);
+  }, [theme]);
+
+  const value = {
+    theme,
+    setTheme: (theme: Theme) => {
+      localStorage.setItem('theme', theme);
+      setTheme(theme);
+    },
+  };
+
+  return (
+    <ThemeProviderContext.Provider value={value}>
+      {children}
+    </ThemeProviderContext.Provider>
+  );
+}
+
+export const useTheme = () => {
+  const context = useContext(ThemeProviderContext);
+
+  if (context === undefined)
+    throw new Error('useTheme must be used within a ThemeProvider');
+
+  return context;
+};
+```
+
+Implement a theme toggle component that uses this provider to switch between light, dark, and system themes.
+
+## 6. Fix Tailwind CSS PostCSS configuration issue [done]
+### Dependencies: None
+### Description: Resolved the PostCSS plugin error with Tailwind CSS by reinstalling the packages and updating configuration files to ensure proper compatibility with the latest versions.
+### Details:
+
+

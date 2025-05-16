@@ -1,0 +1,23 @@
+{
+  "projects": {
+    "default": "db888-67827",
+    "development": "db888-67827",
+    "staging": "db888-67827",
+    "production": "db888-67827"
+  },
+  "targets": {
+    "db888-67827": {
+      "hosting": {
+        "development": [
+          "db888-dev"
+        ],
+        "staging": [
+          "db888-staging"
+        ],
+        "production": [
+          "db888-67827"
+        ]
+      }
+    }
+  }
+}
