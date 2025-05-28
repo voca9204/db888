@@ -1,0 +1,119 @@
+# Task ID: 28
+# Title: Task #28: Firebase Deployment Configuration and Production Deployment
+# Status: pending
+# Dependencies: 27
+# Priority: medium
+# Description: Configure Firebase deployment settings and deploy the frontend application and Cloud Functions to the production environment, making the application accessible to real users.
+# Details:
+This task involves setting up and executing the deployment process for both the frontend application and Cloud Functions to Firebase. The implementation should include:
+
+1. **Preparation**:
+   - Ensure Task #27 (TypeScript error fixes) is completed and verified
+   - Create separate Firebase project configurations for development and production environments
+   - Configure environment variables for production deployment
+   - Update Firebase configuration files (.firebaserc, firebase.json) with appropriate settings
+
+2. **Build Process**:
+   - Create optimized production builds for the frontend application
+   - Implement build scripts in package.json for automated builds
+   - Configure webpack or other bundling tools for production optimization (minification, code splitting, etc.)
+   - Ensure all static assets are properly handled during the build process
+
+3. **Firebase Hosting Configuration**:
+   - Set up caching rules for static assets
+   - Configure custom domain if required
+   - Set up proper redirects and rewrites for SPA routing
+   - Configure security headers
+
+4. **Firebase Functions Deployment**:
+   - Ensure all Cloud Functions are properly exported
+   - Configure appropriate memory allocation and timeout settings
+   - Set up regional deployment settings based on target user locations
+   - Implement proper error handling for production environment
+
+5. **Deployment Scripts**:
+   - Create deployment scripts that include build and deploy steps
+   - Implement CI/CD pipeline integration if applicable
+   - Add pre-deployment validation checks
+   - Create rollback procedures in case of deployment failures
+
+6. **Post-Deployment Verification**:
+   - Implement health checks for deployed services
+   - Set up logging and monitoring for production environment
+
+# Test Strategy:
+The deployment should be verified through the following steps:
+
+1. **Pre-deployment Testing**:
+   - Run a complete test suite on the development environment before deployment
+   - Verify that all TypeScript errors from Task #27 are resolved
+   - Perform a dry-run deployment to catch configuration issues
+
+2. **Deployment Verification**:
+   - Confirm successful deployment through Firebase Console
+   - Verify that all Cloud Functions are properly deployed and running
+   - Check that the frontend application is accessible via the configured domain
+
+3. **Functional Testing**:
+   - Test all critical user flows on the production environment
+   - Verify API endpoints are working correctly with production data
+   - Test authentication flows in the production environment
+   - Ensure proper database connections and operations
+
+4. **Performance Testing**:
+   - Measure initial load time of the application
+   - Verify caching is working as expected
+   - Run Lighthouse or similar tools to assess performance metrics
+   - Test application performance on various devices and network conditions
+
+5. **Security Verification**:
+   - Verify Firebase security rules are properly applied
+   - Check that sensitive data is not exposed
+   - Ensure proper authentication and authorization controls
+   - Verify HTTPS is properly configured
+
+6. **Monitoring Setup Verification**:
+   - Confirm that logging is properly configured
+   - Verify error reporting is working
+   - Test alerting mechanisms for critical failures
+   - Ensure monitoring dashboards are operational
+
+The deployment is considered successful when all verification steps pass and the application is fully functional in the production environment with no critical issues.
+
+# Subtasks:
+## 1. Firebase 프로젝트 설정 검토 및 업데이트 [pending]
+### Dependencies: None
+### Description: Firebase 프로젝트 설정을 검토하고 필요한 부분을 업데이트합니다. firebase.json, .firebaserc 파일을 확인하고, Firebase 콘솔에서 프로젝트 설정과 서비스(Authentication, Firestore, Hosting, Functions)가 올바르게 구성되어 있는지 확인합니다. 필요한 Firebase API와 서비스가 활성화되어 있는지 점검합니다.
+### Details:
+
+
+## 2. Firebase Functions 배포 [pending]
+### Dependencies: None
+### Description: Firebase Functions 배포 준비 및 실행: 수정된 Cloud Functions 코드가 성공적으로 빌드된 후, 'firebase deploy --only functions' 명령으로 Firebase Functions를 배포합니다. 배포 전에 환경 변수와 비밀 정보가 올바르게 설정되어 있는지 확인합니다. 배포 로그를 모니터링하고 성공적으로 완료되었는지 확인합니다.
+### Details:
+
+
+## 3. 프론트엔드 프로덕션 빌드 생성 [pending]
+### Dependencies: None
+### Description: 프론트엔드 애플리케이션 프로덕션 빌드를 생성합니다. db-master 디렉토리에서 'npm run build:prod' 명령을 실행하여 최적화된 프로덕션 빌드를 생성합니다. 프로덕션용 환경 변수가 .env.production 파일에 올바르게, 특히 모의 함수 사용 비활성화(USE_MOCK_FUNCTIONS=false)로 설정되어 있는지 확인합니다. 빌드 과정이 오류 없이 완료되는지 확인합니다.
+### Details:
+
+
+## 4. Firebase Hosting 배포 [pending]
+### Dependencies: None
+### Description: Firebase Hosting에 프론트엔드 애플리케이션을 배포합니다. 'firebase deploy --only hosting' 명령을 사용하여 빌드된 정적 파일을 Firebase Hosting에 배포합니다. 배포 설정에서 캐시 제어, 리다이렉트 규칙, 보안 헤더 등이 적절하게 구성되어 있는지 확인합니다. 배포 후 제공된 URL에서 애플리케이션이 정상적으로 로드되는지 테스트합니다.
+### Details:
+
+
+## 5. 배포된 애플리케이션 테스트 및 검증 [pending]
+### Dependencies: None
+### Description: 배포된 애플리케이션 테스트 및 검증: 배포된 애플리케이션의 주요 기능을 테스트합니다. 특히, Firebase 인증, Firestore 데이터 액세스, Cloud Functions 호출 등이 정상적으로 작동하는지 확인합니다. 데이터베이스 연결과 쿼리 실행 기능을 테스트하여 모의 함수가 아닌 실제 함수가 호출되는지 확인합니다. 검증 결과를 문서화하여 향후 모니터링과 문제 해결에 활용합니다.
+### Details:
+
+
+## 6. 배포 후 모니터링 설정 [pending]
+### Dependencies: None
+### Description: 배포 후 성능 모니터링 및 로그 분석: Firebase Performance Monitoring과 Logging 설정을 구성하여 애플리케이션 성능과 오류를 모니터링합니다. Firebase 콘솔에서 Cloud Functions의 로그와 성능 지표를 확인하고, 필요한 경우 최적화 계획을 수립합니다. 사용량과 성능 문제에 대응하기 위한 모니터링 전략을 수립합니다.
+### Details:
+
+

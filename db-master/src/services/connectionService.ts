@@ -3,9 +3,10 @@ import {
   saveDbConnection, 
   getDbConnections, 
   deleteDbConnection 
-} from '../firebase/functions';
+} from '../firebase/functions.real';
 import { useDbConnectionStore } from '../store';
 import type { DbConnection } from '../types/store';
+import { callSafely } from '../utils/firebaseFunctions';
 
 /**
  * Test a database connection
@@ -25,13 +26,83 @@ export const testConnection = async (
   }
 ) => {
   try {
-    const result = await testDatabaseConnection(connectionId, connectionDetails);
-    return result.data as { success: boolean; message: string };
+    // Validate connection details if provided
+    if (connectionDetails) {
+      // Ensure host is not empty
+      if (!connectionDetails.host) {
+        return {
+          success: false,
+          message: '호스트를 입력해주세요.',
+        };
+      }
+      
+      // Ensure port is valid
+      if (!connectionDetails.port || isNaN(Number(connectionDetails.port)) || Number(connectionDetails.port) <= 0 || Number(connectionDetails.port) > 65535) {
+        return {
+          success: false,
+          message: '포트는 1에서 65535 사이의 유효한 숫자여야 합니다.',
+        };
+      }
+      
+      // Ensure database is not empty
+      if (!connectionDetails.database) {
+        return {
+          success: false,
+          message: '데이터베이스 이름을 입력해주세요.',
+        };
+      }
+      
+      // Ensure user is not empty
+      if (!connectionDetails.user) {
+        return {
+          success: false,
+          message: '사용자 이름을 입력해주세요.',
+        };
+      }
+      
+      // Ensure password is provided for new connections
+      if (!connectionId && !connectionDetails.password) {
+        return {
+          success: false,
+          message: '비밀번호를 입력해주세요.',
+        };
+      }
+    } else if (!connectionId) {
+      return {
+        success: false,
+        message: '연결 정보가 필요합니다.',
+      };
+    }
+
+    console.log(`연결 테스트 시작: ${connectionId || connectionDetails?.host}`);
+    
+    // 안전한 함수 호출 사용
+    const callParams = connectionId ? connectionId : connectionDetails;
+    const result = await callSafely(testDatabaseConnection, callParams);
+    
+    console.log(`연결 테스트 결과:`, result);
+    
+    // 호출 실패 시 기본 오류 메시지 반환
+    if (!result.success) {
+      return {
+        success: false,
+        message: result.error?.message || 'Firebase 함수 호출에 실패했습니다. 관리자에게 문의하세요.',
+        errorCode: 'function_call_failed',
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    // 상세 결과 정보를 포함해서 반환합니다
+    return {
+      ...result.data,
+      timestamp: new Date().toISOString()
+    };
   } catch (error) {
     console.error('Error testing connection:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
     };
   }
 };

@@ -5,6 +5,8 @@ import useApplyTheme from './hooks/useApplyTheme';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initPerformance, initAnalytics, setupGlobalErrorHandlers } from './utils/monitoring';
 import { IS_DEV } from './utils/environment';
+import { ToastProvider } from './context/ToastContext';
+import FirebaseMockToggle from './components/debug/FirebaseMockToggle';
 
 function App() {
   // Apply theme from user preferences
@@ -27,7 +29,10 @@ function App() {
   
   return (
     <ErrorBoundary>
-      <AppRouter />
+      <ToastProvider>
+        <AppRouter />
+        {IS_DEV && <FirebaseMockToggle />}
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

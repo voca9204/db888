@@ -3,7 +3,7 @@ import {
   getSchemaVersions,
   getSchemaChanges,
   getSchemaVersion
-} from '../firebase/functions';
+} from '../firebase/functions.real';
 
 /**
  * Retrieve database schema

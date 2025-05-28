@@ -1,103 +1,22 @@
-import * as mysql from "mysql2/promise";
-import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { decrypt } from "../utils/encryption";
 import { ConnectionConfig } from "./types";
-
-// Connection pool manager
-const connectionPools: Record<string, mysql.Pool> = {};
-
-/**
- * Creates a unique connection ID based on the connection config
- * @param config 
- * @returns 
- */
-const getConnectionId = (config: { host: string, port: number, database: string, user: string }): string => {
-  return `${config.host}:${config.port}:${config.database}:${config.user}`;
-};
-
-/**
- * Get or create a connection pool for a database
- * @param config 
- * @returns 
- */
-export const getConnectionPool = async (config: {
-  host: string,
-  port: number,
-  user: string,
-  password: string,
-  database: string,
-  ssl?: boolean
-}): Promise<mysql.Pool> => {
-  const id = getConnectionId(config);
-  
-  if (connectionPools[id]) {
-    return connectionPools[id];
-  }
-  
-  try {
-    // Create connection pool
-    const pool = mysql.createPool({
-      host: config.host,
-      port: config.port,
-      database: config.database,
-      user: config.user,
-      password: config.password,
-      ssl: config.ssl ? { rejectUnauthorized: true } : undefined,
-      connectionLimit: 5,
-      connectTimeout: 10000,
-      acquireTimeout: 10000,
-    });
-    
-    // Cache connection pool
-    connectionPools[id] = pool;
-    return pool;
-  } catch (error) {
-    console.error('Failed to create connection pool', error);
-    throw new Error(`Failed to create database connection: ${error.message}`);
-  }
-};
-
-/**
- * Create a single database connection
- * @param host 
- * @param port 
- * @param user 
- * @param password 
- * @param database 
- * @param ssl 
- * @returns 
- */
-export const createConnection = async (
-  host: string,
-  port: number,
-  user: string,
-  password: string,
-  database: string,
-  ssl?: boolean
-): Promise<mysql.Connection> => {
-  try {
-    const connection = await mysql.createConnection({
-      host,
-      port,
-      user,
-      password,
-      database,
-      ssl: ssl ? { rejectUnauthorized: true } : undefined,
-    });
-    return connection;
-  } catch (error) {
-    console.error("Error creating database connection:", error);
-    throw new Error(`Failed to connect to database: ${error.message}`);
-  }
-};
+import { 
+  createConnection, 
+  createConnectionPool, 
+  closeConnection,
+  closeAllPools,
+  executeQuery,
+  executeQueryInTransaction
+} from "./mariadb";
 
 /**
  * Get a connection by ID from Firestore
- * @param userId 
- * @param connectionId 
- * @returns 
+ * 
+ * @param userId User ID
+ * @param connectionId Connection ID
+ * @returns Connection configuration
  */
 export const getConnection = async (
   userId: string,
@@ -135,8 +54,9 @@ export const getConnection = async (
 
 /**
  * Save a connection to Firestore
- * @param connectionData 
- * @returns 
+ * 
+ * @param connectionData Connection configuration
+ * @returns Connection ID
  */
 export const saveConnection = async (
   connectionData: ConnectionConfig
@@ -165,8 +85,9 @@ export const saveConnection = async (
 
 /**
  * Delete a connection from Firestore
- * @param userId 
- * @param connectionId 
+ * 
+ * @param userId User ID
+ * @param connectionId Connection ID
  */
 export const deleteConnection = async (
   userId: string,
@@ -194,7 +115,8 @@ export const deleteConnection = async (
 
 /**
  * Update last used timestamp for a connection
- * @param connectionId 
+ * 
+ * @param connectionId Connection ID
  */
 export const updateLastUsed = async (connectionId: string): Promise<void> => {
   try {
@@ -212,16 +134,27 @@ export const updateLastUsed = async (connectionId: string): Promise<void> => {
 
 /**
  * Get all connections for a user
- * @param userId 
- * @returns 
+ * 
+ * @param userId User ID
+ * @param query Optional Firestore query for filtering/sorting
+ * @returns List of connection configurations
  */
-export const getAllConnections = async (userId: string): Promise<ConnectionConfig[]> => {
+export const getAllConnections = async (
+  userId: string,
+  query?: any
+): Promise<ConnectionConfig[]> => {
   try {
-    const connectionsSnapshot = await admin.firestore()
-      .collection("connections")
-      .where("userId", "==", userId)
-      .orderBy("updatedAt", "desc")
-      .get();
+    let connectionsQuery = query;
+    
+    // If no query provided, create a default one
+    if (!connectionsQuery) {
+      connectionsQuery = admin.firestore()
+        .collection("connections")
+        .where("userId", "==", userId)
+        .orderBy("updatedAt", "desc");
+    }
+    
+    const connectionsSnapshot = await connectionsQuery.get();
     
     return connectionsSnapshot.docs.map(doc => {
       const data = doc.data() as ConnectionConfig;
@@ -237,12 +170,13 @@ export const getAllConnections = async (userId: string): Promise<ConnectionConfi
 
 /**
  * Log query execution to Firestore for auditing
- * @param userId 
- * @param connectionId 
- * @param query 
- * @param status 
- * @param error 
- * @param executionTimeMs 
+ * 
+ * @param userId User ID
+ * @param connectionId Connection ID
+ * @param query Query string
+ * @param status Query execution status
+ * @param error Error message if any
+ * @param executionTimeMs Execution time in milliseconds
  */
 export const logQueryExecution = async (
   userId: string,
@@ -261,4 +195,14 @@ export const logQueryExecution = async (
     executionTimeMs,
     timestamp: Timestamp.now(),
   });
+};
+
+// Export functions from mariadb.ts
+export {
+  createConnection,
+  createConnectionPool,
+  closeConnection,
+  closeAllPools,
+  executeQuery,
+  executeQueryInTransaction
 };

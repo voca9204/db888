@@ -11,6 +11,7 @@ import * as authFunctions from "./auth";
 import * as databaseFunctions from "./database/functions";
 import * as schedulingFunctions from "./scheduling/functions";
 import * as notificationFunctions from "./scheduling/notifications";
+import * as tableFunctions from "./database/table-functions";
 
 // Auth functions
 export const createUserProfile = authFunctions.createUserProfile;
@@ -25,6 +26,12 @@ export const deleteDbConnection = databaseFunctions.deleteDbConnection;
 export const getSchemaVersions = databaseFunctions.getSchemaVersions;
 export const getSchemaChanges = databaseFunctions.getSchemaChanges;
 export const getSchemaVersion = databaseFunctions.getSchemaVersion;
+
+// Table functions
+export const getTableData = tableFunctions.getTableData;
+export const updateTableRow = tableFunctions.updateTableRow;
+export const insertTableRow = tableFunctions.insertTableRow;
+export const deleteTableRow = tableFunctions.deleteTableRow;
 
 // Scheduling and notification functions
 export const executeScheduledQuery = schedulingFunctions.executeScheduledQuery;

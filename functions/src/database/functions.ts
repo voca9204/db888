@@ -12,6 +12,7 @@ import {
   getConnectionPool
 } from "./index";
 import { ConnectionConfig } from "./types";
+import { retryWithBackoff } from "../utils/retry";
 
 // Cloud Function to test a database connection
 export const testConnection = functions.https.onCall(async (data, context) => {
@@ -26,50 +27,189 @@ export const testConnection = functions.https.onCall(async (data, context) => {
   const userId = context.auth.uid;
   
   try {
+    // Validate the request
+    if (!data) {
+      throw new functions.https.HttpsError(
+        "invalid-argument", 
+        "Missing connection parameters"
+      );
+    }
+    
     // If connectionId is provided, test an existing connection
     if (data.connectionId) {
-      const connectionData = await getConnection(userId, data.connectionId);
-      
-      const connection = await createConnection(
-        connectionData.host,
-        connectionData.port,
-        connectionData.user,
-        connectionData.password,
-        connectionData.database,
-        connectionData.ssl
-      );
-      
-      await connection.ping();
-      await connection.end();
-      
-      // Update last used timestamp
-      await updateLastUsed(data.connectionId);
-      
-      return { success: true, message: "Connection successful" };
+      // Get connection details from Firestore
+      try {
+        const connectionData = await getConnection(userId, data.connectionId);
+        
+        // Check if connection data has all required fields
+        if (!connectionData.host || !connectionData.user || !connectionData.password) {
+          throw new functions.https.HttpsError(
+            "failed-precondition",
+            "Connection is missing required fields"
+          );
+        }
+        
+        // Test the connection
+        const startTime = Date.now();
+        const connection = await createConnection(
+          connectionData.host,
+          connectionData.port,
+          connectionData.user,
+          connectionData.password,
+          connectionData.database,
+          connectionData.ssl
+        );
+        
+        // Execute a simple query to verify connection
+        await connection.query('SELECT 1 AS connection_test');
+        
+        // Close the connection
+        await closeConnection(connection);
+        
+        const executionTime = Date.now() - startTime;
+        
+        // Update last used timestamp
+        await updateLastUsed(data.connectionId);
+        
+        return { 
+          success: true, 
+          message: "Connection successful", 
+          executionTime,
+          details: {
+            host: connectionData.host,
+            port: connectionData.port,
+            database: connectionData.database,
+            user: connectionData.user,
+            ssl: connectionData.ssl
+          }
+        };
+      } catch (error) {
+        console.error("Error testing existing connection:", error);
+        return {
+          success: false,
+          message: `Connection failed: ${error.message}`,
+          errorCode: error.code || 'unknown'
+        };
+      }
     } else {
       // Test a new connection with provided details
       const { host, port, user, password, database, ssl } = data;
       
-      const connection = await createConnection(
-        host,
-        parseInt(port, 10),
-        user,
-        password,
-        database,
-        ssl
-      );
+      // Validate required parameters
+      if (!host || !user || !password || !database) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "Missing required connection parameters: host, user, password, and database are required"
+        );
+      }
       
-      await connection.ping();
-      await connection.end();
+      if (isNaN(parseInt(port, 10))) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "Port must be a valid number"
+        );
+      }
       
-      return { success: true, message: "Connection successful" };
+      try {
+        // Test the connection with retry logic
+        const startTime = Date.now();
+        const connection = await retryWithBackoff(async () => {
+          return await createConnection(
+            host,
+            parseInt(port, 10),
+            user,
+            password,
+            database,
+            ssl === true
+          );
+        }, 3); // Retry up to 3 times
+        
+        // Test server information
+        const [serverInfo] = await connection.query('SELECT VERSION() AS version, DATABASE() AS database, USER() AS user');
+        
+        // Test database permissions
+        const [permissionResults] = await connection.query(`
+          SHOW GRANTS FOR CURRENT_USER();
+        `);
+        
+        // Get basic schema info to verify read access
+        const [schemaInfo] = await connection.query(`
+          SELECT 
+            COUNT(*) AS table_count
+          FROM 
+            information_schema.TABLES 
+          WHERE 
+            TABLE_SCHEMA = ?
+        `, [database]);
+        
+        // Close the connection
+        await closeConnection(connection);
+        
+        const executionTime = Date.now() - startTime;
+        
+        return { 
+          success: true, 
+          message: "Connection successful", 
+          executionTime,
+          details: {
+            host,
+            port: parseInt(port, 10),
+            database,
+            user,
+            ssl: ssl === true,
+            serverInfo: serverInfo[0],
+            permissions: permissionResults,
+            schemaInfo: schemaInfo[0],
+          }
+        };
+      } catch (error) {
+        console.error("Error testing new connection:", error);
+        
+        // Provide more user-friendly error messages for common cases
+        let errorMessage = error.message;
+        let errorCode = 'unknown';
+        
+        if (error.code === 'ECONNREFUSED') {
+          errorMessage = `Unable to connect to MariaDB server at ${host}:${port}. Ensure the server is running and accessible.`;
+          errorCode = 'connection_refused';
+        } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+          errorMessage = 'Access denied. Invalid username or password.';
+          errorCode = 'access_denied';
+        } else if (error.code === 'ER_BAD_DB_ERROR') {
+          errorMessage = `Database '${database}' does not exist on the server.`;
+          errorCode = 'database_not_found';
+        } else if (error.code === 'ETIMEDOUT') {
+          errorMessage = 'Connection timed out. Please check your network settings and firewall rules.';
+          errorCode = 'connection_timeout';
+        } else if (error.code === 'ENOTFOUND') {
+          errorMessage = `Host '${host}' not found. Please check the hostname.`;
+          errorCode = 'host_not_found';
+        }
+        
+        return {
+          success: false,
+          message: `Connection failed: ${errorMessage}`,
+          errorCode: errorCode,
+          originalError: error.message,
+          details: {
+            host: host,
+            port: port,
+            database: database,
+            user: user,
+            ssl: ssl === true,
+            errorStack: error.stack ? error.stack.split('\n').slice(0, 3).join('\n') : 'No stack trace',
+            errorCode: error.code || 'unknown',
+            errno: error.errno || 'unknown'
+          }
+        };
+      }
     }
   } catch (error) {
-    console.error("Error testing connection:", error);
-    return {
-      success: false,
-      message: `Connection failed: ${error.message}`
-    };
+    console.error("Error in testConnection function:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      `Internal error: ${error.message}`
+    );
   }
 });
 
@@ -86,13 +226,29 @@ export const saveDbConnection = functions.https.onCall(async (data, context) => 
   const userId = context.auth.uid;
   
   try {
-    const { name, host, port, database, user, password, ssl, id } = data;
+    // Validate the request
+    if (!data) {
+      throw new functions.https.HttpsError(
+        "invalid-argument", 
+        "Missing connection parameters"
+      );
+    }
+    
+    const { name, host, port, database, user, password, ssl, id, tags, description } = data;
     
     // Validate required fields
     if (!name || !host || !port || !database || !user) {
       throw new functions.https.HttpsError(
         "invalid-argument",
-        "Missing required connection parameters"
+        "Missing required connection parameters: name, host, port, database, and user are required"
+      );
+    }
+    
+    // Validate port is a number
+    if (isNaN(parseInt(port, 10))) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Port must be a valid number"
       );
     }
     
@@ -104,8 +260,11 @@ export const saveDbConnection = functions.https.onCall(async (data, context) => 
         const existingConnection = await getConnection(userId, id);
         existingPassword = existingConnection.password;
       } catch (error) {
-        // If connection not found, ignore and create a new one
-        console.log("Existing connection not found, creating new:", error);
+        // If connection not found, require a password
+        throw new functions.https.HttpsError(
+          "not-found",
+          "Connection not found for updating. Please provide all required fields."
+        );
       }
     }
     
@@ -132,9 +291,39 @@ export const saveDbConnection = functions.https.onCall(async (data, context) => 
       password: encryptedPassword!,
       ssl: !!ssl,
       userId,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
+      createdAt: id ? undefined : Date.now(), // Only set createdAt for new connections
+      updatedAt: Date.now(),
+      // Optional fields
+      tags: tags || [],
+      description: description || "",
+      // Add other fields from data that match ConnectionConfig
+      ...Object.keys(data)
+        .filter(key => !['id', 'name', 'host', 'port', 'database', 'user', 'password', 'ssl', 'userId', 'createdAt', 'updatedAt'].includes(key))
+        .reduce((obj, key) => ({ ...obj, [key]: data[key] }), {}),
     };
+    
+    // Test the connection before saving
+    try {
+      const connection = await createConnection(
+        connectionConfig.host,
+        connectionConfig.port,
+        connectionConfig.user,
+        password || existingPassword!,
+        connectionConfig.database,
+        connectionConfig.ssl
+      );
+      
+      // Execute a simple query to verify connection
+      await connection.query('SELECT 1 AS connection_test');
+      
+      // Close the connection
+      await closeConnection(connection);
+    } catch (error) {
+      throw new functions.https.HttpsError(
+        "aborted",
+        `Connection test failed: ${error.message}. Connection not saved.`
+      );
+    }
     
     // Save connection to Firestore
     const connectionId = await saveConnection(connectionConfig);
@@ -142,13 +331,29 @@ export const saveDbConnection = functions.https.onCall(async (data, context) => 
     return {
       success: true,
       connectionId,
-      message: "Connection saved successfully"
+      message: id ? "Connection updated successfully" : "Connection saved successfully",
+      details: {
+        name: connectionConfig.name,
+        host: connectionConfig.host,
+        port: connectionConfig.port,
+        database: connectionConfig.database,
+        user: connectionConfig.user,
+        ssl: connectionConfig.ssl,
+        tags: connectionConfig.tags,
+        description: connectionConfig.description,
+      }
     };
   } catch (error) {
     console.error("Error saving connection:", error);
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error; // Re-throw HttpsError
+    }
+    
     return {
       success: false,
-      message: `Failed to save connection: ${error.message}`
+      message: `Failed to save connection: ${error.message}`,
+      errorCode: error.code || 'unknown_error'
     };
   }
 });
@@ -166,18 +371,108 @@ export const getDbConnections = functions.https.onCall(async (data, context) => 
   const userId = context.auth.uid;
   
   try {
-    const connections = await getAllConnections(userId);
+    // Get optional filtering and sorting parameters
+    const { tags, sortBy, sortOrder, searchTerm, limit } = data || {};
     
-    return {
-      success: true,
-      connections
-    };
+    // Get connections from Firestore
+    let query: any = admin.firestore()
+      .collection("connections")
+      .where("userId", "==", userId);
+    
+    // Apply tag filtering if provided
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      query = query.where("tags", "array-contains-any", tags);
+    }
+    
+    // Apply search term filtering if provided
+    if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim() !== '') {
+      // Unfortunately, Firestore doesn't support full-text search
+      // So we'll get all connections and filter them in memory
+      // This is inefficient but works for now
+      // For production, consider using a dedicated search service like Algolia
+      const snapshot = await query.get();
+      
+      // Filter connections based on search term
+      const searchTermLower = searchTerm.toLowerCase();
+      const connections = snapshot.docs
+        .map(doc => {
+          const data = doc.data() as ConnectionConfig;
+          // Don't include the password in the response
+          const { password, ...rest } = data;
+          return rest as ConnectionConfig;
+        })
+        .filter(connection => {
+          return (
+            (connection.name && connection.name.toLowerCase().includes(searchTermLower)) ||
+            (connection.host && connection.host.toLowerCase().includes(searchTermLower)) ||
+            (connection.database && connection.database.toLowerCase().includes(searchTermLower)) ||
+            (connection.description && connection.description.toLowerCase().includes(searchTermLower))
+          );
+        });
+      
+      // Apply sorting
+      if (sortBy && ['name', 'host', 'database', 'updatedAt', 'createdAt', 'lastUsed'].includes(sortBy)) {
+        connections.sort((a, b) => {
+          const aValue = a[sortBy] || 0;
+          const bValue = b[sortBy] || 0;
+          const order = sortOrder === 'desc' ? -1 : 1;
+          
+          return order * (typeof aValue === 'string' 
+            ? aValue.localeCompare(bValue) 
+            : aValue - bValue);
+        });
+      } else {
+        // Default to sorting by last updated
+        connections.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      }
+      
+      // Apply limit
+      const limitNum = parseInt(limit, 10) || 100;
+      const limitedConnections = connections.slice(0, limitNum);
+      
+      return {
+        success: true,
+        connections: limitedConnections,
+        total: connections.length,
+        filtered: connections.length !== snapshot.docs.length
+      };
+    } else {
+      // Apply sorting if provided
+      if (sortBy && ['name', 'host', 'database', 'updatedAt', 'createdAt', 'lastUsed'].includes(sortBy)) {
+        query = query.orderBy(sortBy, sortOrder === 'desc' ? 'desc' : 'asc');
+      } else {
+        // Default to sorting by last updated
+        query = query.orderBy('updatedAt', 'desc');
+      }
+      
+      // Apply limit if provided
+      if (limit && !isNaN(parseInt(limit, 10))) {
+        query = query.limit(parseInt(limit, 10));
+      } else {
+        // Default limit
+        query = query.limit(100);
+      }
+      
+      const connections = await getAllConnections(userId, query);
+      
+      return {
+        success: true,
+        connections,
+        total: connections.length,
+        filtered: false
+      };
+    }
   } catch (error) {
     console.error("Error retrieving connections:", error);
-    return {
-      success: false,
-      message: `Failed to retrieve connections: ${error.message}`
-    };
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError(
+      "internal",
+      `Failed to retrieve connections: ${error.message}`
+    );
   }
 });
 
@@ -192,7 +487,7 @@ export const deleteDbConnection = functions.https.onCall(async (data, context) =
   }
 
   const userId = context.auth.uid;
-  const { connectionId } = data;
+  const { connectionId } = data || {};
   
   if (!connectionId) {
     throw new functions.https.HttpsError(
@@ -202,20 +497,114 @@ export const deleteDbConnection = functions.https.onCall(async (data, context) =
   }
   
   try {
+    // Verify connection exists and belongs to the user
+    try {
+      await getConnection(userId, connectionId);
+    } catch (error) {
+      throw new functions.https.HttpsError(
+        "not-found",
+        "Connection not found or you don't have permission to delete it"
+      );
+    }
+    
+    // Delete the connection
     await deleteConnection(userId, connectionId);
+    
+    // Delete related data
+    await deleteConnectionRelatedData(userId, connectionId);
     
     return {
       success: true,
-      message: "Connection deleted successfully"
+      message: "Connection deleted successfully",
+      connectionId
     };
   } catch (error) {
     console.error("Error deleting connection:", error);
-    return {
-      success: false,
-      message: `Failed to delete connection: ${error.message}`
-    };
+    
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+    
+    throw new functions.https.HttpsError(
+      "internal",
+      `Failed to delete connection: ${error.message}`
+    );
   }
 });
+
+/**
+ * Delete data related to a connection (schemas, logs, etc.)
+ * @param userId User ID
+ * @param connectionId Connection ID
+ */
+async function deleteConnectionRelatedData(userId: string, connectionId: string): Promise<void> {
+  try {
+    const batch = admin.firestore().batch();
+    
+    // Delete schema cache
+    const schemaRef = admin.firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('connections')
+      .doc(connectionId)
+      .collection('schema')
+      .doc('current');
+    
+    batch.delete(schemaRef);
+    
+    // Delete schema versions (first 100)
+    const versionsSnapshot = await admin.firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('connections')
+      .doc(connectionId)
+      .collection('schemaVersions')
+      .limit(100)
+      .get();
+    
+    versionsSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    // Delete schema changes (first 100)
+    const changesSnapshot = await admin.firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('connections')
+      .doc(connectionId)
+      .collection('schemaChanges')
+      .limit(100)
+      .get();
+    
+    changesSnapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    // Commit the batch
+    await batch.commit();
+    
+    // Delete query logs (needs to be paginated for large data)
+    // Get query logs for this connection
+    const logsSnapshot = await admin.firestore()
+      .collection("queryLogs")
+      .where("connectionId", "==", connectionId)
+      .limit(100)
+      .get();
+    
+    if (!logsSnapshot.empty) {
+      const logBatch = admin.firestore().batch();
+      
+      logsSnapshot.docs.forEach(doc => {
+        logBatch.delete(doc.ref);
+      });
+      
+      await logBatch.commit();
+    }
+  } catch (error) {
+    console.error("Error deleting connection related data:", error);
+    // Non-critical error, so we don't rethrow
+  }
+}
 
 // Cloud Function to execute a database query
 export const executeQuery = functions.https.onCall(async (data, context) => {

@@ -5,16 +5,32 @@ import type { DbConnection } from '../../types/store';
 interface DbConnectionStore {
   connections: DbConnection[];
   activeConnectionId: string | null;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: number | null;
   
-  addConnection: (connection: Omit<DbConnection, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  // CRUD actions
+  addConnection: (connection: DbConnection) => void;
   updateConnection: (id: string, data: Partial<DbConnection>) => void;
   deleteConnection: (id: string) => void;
-  setActiveConnection: (id: string | null) => void;
+  setConnections: (connections: DbConnection[]) => void;
+  
+  // Active connection management
+  setActiveConnectionId: (id: string | null) => void;
   getConnection: (id: string) => DbConnection | undefined;
   getActiveConnection: () => DbConnection | undefined;
+  
+  // Loading state management
+  setLoading: (isLoading: boolean) => void;
+  setError: (error: string | null) => void;
+  
+  // Tag related functions
+  getConnectionsByTag: (tag: string) => DbConnection[];
+  getAllTags: () => string[];
+  
+  // Search functions
+  searchConnections: (term: string) => DbConnection[];
 }
-
-let nextId = 1;
 
 const useDbConnectionStore = create<DbConnectionStore>()(
   logger(
@@ -22,18 +38,27 @@ const useDbConnectionStore = create<DbConnectionStore>()(
       (set, get) => ({
         connections: [],
         activeConnectionId: null,
+        isLoading: false,
+        error: null,
+        lastUpdated: null,
         
         addConnection: (connection) => set((state) => {
-          const newConnection: DbConnection = {
-            ...connection,
-            id: `conn_${nextId++}`,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          };
+          // Check if connection already exists
+          const exists = state.connections.some(conn => conn.id === connection.id);
+          
+          if (exists) {
+            return {
+              connections: state.connections.map(conn => 
+                conn.id === connection.id ? { ...conn, ...connection } : conn
+              ),
+              lastUpdated: Date.now(),
+            };
+          }
           
           return {
-            connections: [...state.connections, newConnection],
-            activeConnectionId: state.activeConnectionId || newConnection.id,
+            connections: [...state.connections, { ...connection }],
+            activeConnectionId: state.activeConnectionId || connection.id,
+            lastUpdated: Date.now(),
           };
         }),
         
@@ -43,6 +68,7 @@ const useDbConnectionStore = create<DbConnectionStore>()(
               ? { ...conn, ...data, updatedAt: Date.now() }
               : conn
           ),
+          lastUpdated: Date.now(),
         })),
         
         deleteConnection: (id) => set((state) => {
@@ -57,10 +83,16 @@ const useDbConnectionStore = create<DbConnectionStore>()(
           return {
             connections: newConnections,
             activeConnectionId: newActiveId,
+            lastUpdated: Date.now(),
           };
         }),
         
-        setActiveConnection: (id) => set({
+        setConnections: (connections) => set({
+          connections,
+          lastUpdated: Date.now(),
+        }),
+        
+        setActiveConnectionId: (id) => set({
           activeConnectionId: id,
         }),
         
@@ -72,6 +104,43 @@ const useDbConnectionStore = create<DbConnectionStore>()(
           const { connections, activeConnectionId } = get();
           return connections.find((conn) => conn.id === activeConnectionId);
         },
+        
+        setLoading: (isLoading) => set({
+          isLoading,
+        }),
+        
+        setError: (error) => set({
+          error,
+        }),
+        
+        getConnectionsByTag: (tag) => {
+          return get().connections.filter(conn => 
+            conn.tags && conn.tags.includes(tag)
+          );
+        },
+        
+        getAllTags: () => {
+          const tags = new Set<string>();
+          
+          get().connections.forEach(conn => {
+            if (conn.tags && Array.isArray(conn.tags)) {
+              conn.tags.forEach(tag => tags.add(tag));
+            }
+          });
+          
+          return Array.from(tags);
+        },
+        
+        searchConnections: (term) => {
+          const searchTerm = term.toLowerCase();
+          
+          return get().connections.filter(conn => 
+            (conn.name && conn.name.toLowerCase().includes(searchTerm)) ||
+            (conn.host && conn.host.toLowerCase().includes(searchTerm)) ||
+            (conn.database && conn.database.toLowerCase().includes(searchTerm)) ||
+            (conn.description && conn.description.toLowerCase().includes(searchTerm))
+          );
+        },
       }),
       { 
         name: 'db-connections',
@@ -82,8 +151,10 @@ const useDbConnectionStore = create<DbConnectionStore>()(
             return rest;
           }),
           activeConnectionId: state.activeConnectionId,
+          // Don't persist loading states, errors
+          lastUpdated: state.lastUpdated,
         }),
-        version: 1
+        version: 2
       }
     ),
     'dbConnectionStore'

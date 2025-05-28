@@ -33,12 +33,12 @@ let storage;
 
 try {
   // Initialize Functions with region parameter
-  functions = getFunctions(app, 'asia-northeast3'); // 가장 가까운 아시아 리전으로 설정
+  functions = getFunctions(app); // 기본 리전 사용 (us-central1)
   
   // Initialize Storage
   storage = getStorage(app);
 } catch (error) {
-  console.warn('Firebase services initialization error:', error);
+  console.error('Firebase services initialization error:', error);
   // 오류 발생 시 null 값으로 초기화
   functions = null;
   storage = null;

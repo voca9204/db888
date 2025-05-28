@@ -2,7 +2,7 @@
 export * from './config';
 export * from './auth';
 export * from './firestore';
-export * from './functions';
+export * from './functions.real'; // Use real Firebase functions instead of mock implementations
 
 // Export models
 export { default as QueryTemplateModel } from './models/QueryTemplateModel';

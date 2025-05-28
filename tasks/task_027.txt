@@ -1,0 +1,115 @@
+# Task ID: 27
+# Title: Task #27: Fix TypeScript Errors in Firebase Cloud Functions
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Resolve 158 TypeScript errors in the Firebase Cloud Functions codebase to ensure successful builds, focusing on implicit any types, unknown error handling, missing modules, and MySQL/MariaDB type mismatches.
+# Details:
+This task requires a systematic approach to fixing TypeScript errors in the Firebase Cloud Functions codebase:
+
+1. **Error Categorization**:
+   - Group the 158 errors into categories: implicit any types, unknown error types, missing modules, MySQL/MariaDB type mismatches, and other errors
+   - Create a spreadsheet or document to track progress on each error
+
+2. **Fixing Implicit Any Types**:
+   - Add explicit type annotations to variables, function parameters, and return types
+   - Use appropriate TypeScript interfaces and types for Firebase and database objects
+   - Consider using utility types like Partial<T>, Pick<T>, or Omit<T> where appropriate
+
+3. **Error Handling Improvements**:
+   - Implement proper error typing using custom error classes or union types
+   - Replace generic 'catch(error)' blocks with typed error handling
+   - Add type guards where necessary to handle different error scenarios
+
+4. **Module Resolution**:
+   - Fix import paths for modules that cannot be found
+   - Install missing dependencies and their corresponding @types packages
+   - Create type declaration files (.d.ts) for modules without TypeScript definitions
+
+5. **MySQL/MariaDB Type Corrections**:
+   - Create proper interfaces for database entities and query results
+   - Fix type mismatches between application code and database schemas
+   - Use appropriate types for database operations (queries, transactions, etc.)
+
+6. **Incremental Testing**:
+   - Fix errors in small batches and run TypeScript compiler after each batch
+   - Prioritize errors that block other parts of the codebase
+
+7. **Documentation**:
+   - Document common patterns and solutions for future reference
+   - Update any existing type documentation to reflect changes
+
+The goal is to make the codebase fully TypeScript-compliant without changing the core functionality of the Firebase Cloud Functions.
+
+# Test Strategy:
+The testing strategy will verify that all TypeScript errors are resolved while maintaining functionality:
+
+1. **Compiler Verification**:
+   - Run `tsc --noEmit` to verify that all TypeScript errors are resolved
+   - Ensure the TypeScript compiler completes successfully with 0 errors
+   - Verify that no new TypeScript errors have been introduced
+
+2. **Build Process Testing**:
+   - Execute the complete build process for Firebase Functions
+   - Confirm that the build completes without errors
+   - Verify that the compiled JavaScript is generated correctly
+
+3. **Functionality Testing**:
+   - Deploy the fixed functions to a development environment
+   - Test each function to ensure they still work as expected
+   - Verify that database operations continue to function correctly
+   - Test error scenarios to ensure error handling works properly
+
+4. **Regression Testing**:
+   - Run existing test suites to ensure no regressions were introduced
+   - Perform manual testing of critical paths through the application
+   - Verify that the fixes don't impact the functionality implemented in Tasks #24-26
+
+5. **Code Review**:
+   - Conduct a thorough code review of all type changes
+   - Ensure type definitions are consistent across the codebase
+   - Verify that the chosen types accurately represent the data structures
+
+6. **Documentation Verification**:
+   - Confirm that any documentation updates accurately reflect the type changes
+   - Verify that the error tracking document is complete with all 158 errors resolved
+
+Success criteria: The TypeScript compiler and build process complete with 0 errors, all functions deploy successfully, and all existing functionality continues to work as expected.
+
+# Subtasks:
+## 1. 암시적 any 타입 오류 수정 [pending]
+### Dependencies: None
+### Description: 파라미터 및 변수에 명시적 타입 선언이 누락되어 발생하는 'implicitly has an 'any' type' 오류들을 수정합니다. 특히 scheduling/functions.ts, notifications.ts 등의 파일에서 많이 발생하는 이 오류들을 체계적으로 수정합니다.
+### Details:
+
+
+## 2. 에러 객체 타입 처리 오류 수정 [pending]
+### Dependencies: None
+### Description: catch 블록의 error 객체가 unknown 타입으로 처리되어 발생하는 'error is of type unknown' 오류들을 수정합니다. 에러 객체를 적절히 타입 가드하거나 타입 단언을 사용하여 속성에 안전하게 접근할 수 있도록 코드를 수정합니다.
+### Details:
+
+
+## 3. MySQL/MariaDB 타입 불일치 오류 수정 [pending]
+### Dependencies: None
+### Description: MySQL/MariaDB 관련 타입 오류를 수정합니다. 특히 'Property map does not exist on type QueryResult', 'Type OkPacket is missing the following properties' 등의 오류들을 해결합니다. 적절한 타입 캐스팅이나 인터페이스 확장을 통해 이러한 타입 불일치를 해결합니다.
+### Details:
+
+
+## 4. 모듈 미발견 오류 수정 [pending]
+### Dependencies: None
+### Description: 미발견 모듈 오류(Cannot find module './types')를 해결합니다. 필요한 타입 정의 파일을 생성하거나, 모듈 참조 경로를 올바르게 수정합니다. 필요한 경우 외부 라이브러리의 @types 패키지를 설치합니다.
+### Details:
+
+
+## 5. 기타 타입 호환성 오류 수정 [pending]
+### Dependencies: None
+### Description: 기타 타입 호환성 오류를 수정합니다. 타입 할당 오류(Type is not assignable to), 인수 오류(Argument of type is not assignable to parameter of type), 사용되지 않는 선언(is declared but its value is never read) 등을 해결합니다.
+### Details:
+
+
+## 6. 빌드 성공 확인 및 테스트 [pending]
+### Dependencies: None
+### Description: 빌드 성공 확인 및 테스트를 진행합니다. 모든 오류를 수정한 후 'npm run build' 명령으로 빌드가 성공적으로 완료되는지 확인합니다. 필요한 경우 tsconfig.json의 컴파일러 옵션을 조정하여 빌드 프로세스를 최적화합니다.
+### Details:
+
+

@@ -12,6 +12,15 @@ export interface ConnectionConfig {
   updatedAt: number;
   lastUsed?: number;
   userId: string;
+  // Additional optional fields
+  tags?: string[];
+  description?: string;
+  color?: string;
+  icon?: string;
+  timeout?: number;
+  connectionLimit?: number;
+  readonly?: boolean;
+  favorite?: boolean;
 }
 
 // Database schema types

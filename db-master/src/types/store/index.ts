@@ -61,6 +61,39 @@ export interface DbConnection {
   lastUsed?: number;
   userId: string;
   isActive?: boolean;
+  // Additional fields
+  tags?: string[];
+  description?: string;
+  color?: string;
+  icon?: string;
+  timeout?: number;
+  connectionLimit?: number;
+  readonly?: boolean;
+  favorite?: boolean;
+}
+
+// Connection test result
+export interface ConnectionTestResult {
+  success: boolean;
+  message: string;
+  executionTime?: number;
+  errorCode?: string;
+  details?: {
+    host?: string;
+    port?: number;
+    database?: string;
+    user?: string;
+    ssl?: boolean;
+    serverInfo?: {
+      version?: string;
+      database?: string;
+      user?: string;
+    };
+    permissions?: any[];
+    schemaInfo?: {
+      table_count?: number;
+    };
+  };
 }
 
 // Schema types

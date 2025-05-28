@@ -1,0 +1,143 @@
+# Task ID: 29
+# Title: Task #29: Implement AI-Based Natural Language to SQL Query Conversion System
+# Status: pending
+# Dependencies: None
+# Priority: low
+# Description: Develop a system that converts natural language questions into SQL queries, executes them, and visualizes the results, enabling non-technical users to perform complex database queries through conversational language.
+# Details:
+This task involves building an AI-powered query system with the following components:
+
+1. Natural Language Processing (NLP) Interface:
+   - Create a user-friendly interface for inputting natural language questions
+   - Implement input validation and error handling for user queries
+   - Support multiple languages, with initial focus on Korean and English
+
+2. LLM Integration:
+   - Integrate a Large Language Model (e.g., OpenAI GPT, Google Gemini, or open-source alternatives)
+   - Implement prompt engineering techniques to optimize SQL generation
+   - Set up API connections with appropriate authentication and rate limiting
+
+3. Database Schema Management:
+   - Develop a system to extract and maintain database schema information
+   - Create a mechanism to update schema information when database structure changes
+   - Implement schema validation to prevent SQL injection and security issues
+
+4. SQL Query Generation:
+   - Convert natural language to syntactically correct SQL
+   - Handle complex queries including joins, aggregations, and nested queries
+   - Implement query optimization to ensure efficient database operations
+   - Add safeguards to prevent harmful queries (DROP, DELETE without WHERE, etc.)
+
+5. Query Execution Engine:
+   - Connect to the existing MariaDB database (building on Task #26)
+   - Execute generated SQL queries with proper error handling
+   - Implement query timeout and resource limitation mechanisms
+
+6. Result Visualization:
+   - Create dynamic visualizations based on query results (tables, charts, graphs)
+   - Implement export functionality for results (CSV, JSON, etc.)
+   - Design responsive layouts for different device types
+
+7. Feedback Loop:
+   - Implement a mechanism for users to rate query accuracy
+   - Store successful query patterns for future optimization
+   - Log failed queries for analysis and system improvement
+
+8. Integration with Existing System:
+   - Ensure compatibility with the Firebase deployment (Task #28)
+   - Integrate with existing authentication system
+   - Maintain consistent UI/UX with the rest of the application
+
+Technical considerations:
+- Use TypeScript to avoid errors similar to those in Task #27
+- Implement comprehensive error handling and logging
+- Consider caching mechanisms for frequently asked queries
+- Ensure all components are testable with clear interfaces
+
+# Test Strategy:
+Testing for this AI-based query system should be comprehensive and multi-layered:
+
+1. Unit Testing:
+   - Test each component in isolation with mock inputs/outputs
+   - Verify NLP processing functions with various input patterns
+   - Test SQL generation with edge cases and complex queries
+   - Validate visualization components with different data structures
+
+2. Integration Testing:
+   - Test the flow from natural language input to SQL generation
+   - Verify SQL execution with test database instances
+   - Ensure visualization correctly represents query results
+   - Test integration with existing Firebase components
+
+3. Accuracy Testing:
+   - Create a test suite of natural language queries with expected SQL outputs
+   - Measure accuracy metrics (precision, recall) for SQL generation
+   - Compare generated SQL with manually written queries for the same questions
+   - Test with progressively complex queries to establish system limitations
+
+4. Performance Testing:
+   - Measure response time for different query complexities
+   - Test system under load with concurrent users
+   - Evaluate memory usage during complex query processing
+   - Benchmark database performance with generated queries
+
+5. Security Testing:
+   - Attempt SQL injection through natural language inputs
+   - Verify access control for sensitive database operations
+   - Test authentication integration
+   - Ensure proper handling of sensitive data in visualizations
+
+6. User Acceptance Testing:
+   - Conduct sessions with non-technical users to test system usability
+   - Gather feedback on query accuracy and result clarity
+   - Test with real-world query scenarios from different departments
+   - Evaluate visualization effectiveness for different data types
+
+7. Regression Testing:
+   - Ensure new functionality doesn't break existing features
+   - Verify compatibility with previous tasks (#26, #27, #28)
+   - Test across different browsers and devices
+
+8. Documentation and Acceptance Criteria:
+   - Document test cases and expected results
+   - Define clear acceptance criteria for each component
+   - Create user documentation with example queries
+   - Establish performance benchmarks for production deployment
+
+# Subtasks:
+## 1. 대형 언어 모델(LLM) 통합 및 SQL 변환 구현 [pending]
+### Dependencies: None
+### Description: 자연어 질문을 분석하고 SQL 쿼리로 변환하기 위한 LLM 통합을 구현합니다. OpenAI의 GPT 또는 Anthropic의 Claude API를 프로젝트에 통합하고, 효과적인 프롬프트 설계를 통해 정확한 SQL 생성을 보장합니다. 데이터베이스 스키마 정보를 LLM에 제공하여 컨텍스트를 인식하는 쿼리 생성이 가능하도록 합니다.
+### Details:
+
+
+## 2. 자연어 쿼리 사용자 인터페이스 개발 [pending]
+### Dependencies: None
+### Description: 사용자가 자연어로 질문을 입력하고, 생성된 SQL 쿼리를 확인하고 필요시 수정할 수 있는 직관적인 인터페이스를 개발합니다. 입력창, 쿼리 미리보기, 편집 기능, 실행 버튼, 결과 표시 영역으로 구성된 UI를 Tailwind CSS와 React를 사용하여 구현합니다. 사용자 경험을 최적화하여 기술적 지식이 부족한 사용자도 쉽게 사용할 수 있도록 합니다.
+### Details:
+
+
+## 3. 데이터베이스 스키마 분석 및 컨텍스트 제공 시스템 [pending]
+### Dependencies: None
+### Description: 데이터베이스 스키마(테이블, 열, 관계 등)를 자동으로 추출하고 분석하여 LLM에 컨텍스트로 제공하는 시스템을 구현합니다. 스키마 메타데이터를 캐싱하고 효율적으로 형식화하여 LLM이 정확한 테이블 및 열 이름, 관계, 제약 조건 등을 참조할 수 있도록 합니다. 스키마 변경 시 자동 업데이트 메커니즘을 포함합니다.
+### Details:
+
+
+## 4. 쿼리 결과 자연어 해석 및 요약 기능 [pending]
+### Dependencies: None
+### Description: 생성된 SQL 쿼리 실행 결과를 자연어로 해석하고 요약하는 기능을 구현합니다. LLM을 활용하여 쿼리 결과의 핵심 인사이트, 중요한 패턴, 이상치 등을 식별하고 자연어로 설명합니다. 데이터 특성에 따른 적절한 시각화 방법을 추천하고, 결과에 대한 후속 질문 제안 기능을 포함합니다.
+### Details:
+
+
+## 5. 자연어 쿼리 최적화 및 학습 시스템 [pending]
+### Dependencies: None
+### Description: 자연어 쿼리의 정확도와 효율성을 향상시키기 위한 최적화를 구현합니다. 유사한 질문과 해당 SQL 쿼리를 저장하는 캐싱 시스템, 자주 사용되는 자연어 패턴 학습, 사용자 피드백을 통한 개선 메커니즘 등을 포함합니다. 성능 모니터링 및 오류 추적 시스템을 구축하여 지속적인 개선이 가능하도록 합니다.
+### Details:
+
+
+## 6. 다국어 자연어 쿼리 지원 [pending]
+### Dependencies: None
+### Description: 다국어 자연어 쿼리 지원을 구현합니다. 한국어, 영어, 일본어 등 여러 언어로 질문을 입력할 수 있도록 하고, 각 언어에 맞는 응답과 설명을 제공합니다. 언어 감지 시스템과 번역 기능을 통합하여 사용자가 선호하는 언어로 상호작용할 수 있도록 합니다. 각 언어별 특성을 고려한 SQL 생성 로직을 최적화합니다.
+### Details:
+
+

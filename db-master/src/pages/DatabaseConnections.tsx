@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Input, Spinner } from '../components/ui';
+import { Card, Button, Input, Spinner, ConnectionTestDetails } from '../components/ui';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useDbConnectionStore } from '../store';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../context/ToastContext';
+import { validateConnectionDetails, getUserFriendlyErrorMessage, logError } from '../utils/errorUtils';
 import type { DbConnection } from '../types/store';
 import { testConnection, saveConnection, loadConnections, removeConnection } from '../services';
 
 const DatabaseConnections: React.FC = () => {
   const { activeConnectionId, setActiveConnection } = useDbConnectionStore();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [showNewConnectionForm, setShowNewConnectionForm] = useState(false);
   const [editConnectionId, setEditConnectionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +19,9 @@ const DatabaseConnections: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [connections, setConnections] = useState<DbConnection[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [testResults, setTestResults] = useState<any>(null);
+  
   
   // Form state
   const [formValues, setFormValues] = useState<Omit<DbConnection, 'id' | 'createdAt' | 'updatedAt'>>({
@@ -39,26 +45,36 @@ const DatabaseConnections: React.FC = () => {
         const result = await loadConnections();
         if (result.success) {
           setConnections(result.connections || []);
+          
+          // Show new connection form if no connections exist
+          if (result.connections?.length === 0) {
+            setShowNewConnectionForm(true);
+          }
         } else {
-          setError(result.message || 'Failed to load connections');
+          setError(result.message || '연결 목록을 불러오지 못했습니다.');
+          showToast('연결 목록을 불러오지 못했습니다.', 'error');
         }
       } catch (err) {
-        setError('Failed to load connections');
-        console.error(err);
+        const errorMessage = getUserFriendlyErrorMessage(err);
+        logError(err, 'fetchConnections');
+        setError('연결 목록을 불러오는 중 오류가 발생했습니다: ' + errorMessage);
+        showToast('연결 목록을 불러오지 못했습니다.', 'error');
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchConnections();
-  }, [user?.uid]);
+  }, [user?.uid, showToast]);
   
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormValues(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value, 10) : value,
+      [name]: type === 'checkbox' ? checked : 
+              type === 'number' ? (value === '' ? '' : parseInt(value, 10)) : 
+              value,
     }));
   };
   
@@ -102,15 +118,26 @@ const DatabaseConnections: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setSuccessMessage(null);
+    setValidationErrors({});
     
     try {
+      // Validate connection details
+      const validation = validateConnectionDetails(formValues);
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setIsLoading(false);
+        return;
+      }
+      
       const result = await saveConnection({
         ...formValues,
+        port: formValues.port as number,
         userId: user?.uid || 'unknown-user',
       });
       
       if (result.success) {
-        setSuccessMessage('Connection saved successfully');
+        setSuccessMessage('연결이 성공적으로 저장되었습니다.');
+        showToast('연결이 성공적으로 저장되었습니다.', 'success');
         setShowNewConnectionForm(false);
         setFormValues({
           name: '',
@@ -122,12 +149,18 @@ const DatabaseConnections: React.FC = () => {
           ssl: false,
           userId: user?.uid || 'unknown-user',
         });
+        
+        // Refresh the connection list
+        await loadConnections();
       } else {
-        setError(result.message || 'Failed to save connection');
+        setError(result.message || '연결 저장에 실패했습니다.');
+        showToast('연결 저장에 실패했습니다.', 'error');
       }
     } catch (err) {
-      setError('An error occurred while saving the connection');
-      console.error(err);
+      const errorMessage = getUserFriendlyErrorMessage(err);
+      logError(err, 'handleSaveNewConnection');
+      setError('연결 저장 중 오류가 발생했습니다: ' + errorMessage);
+      showToast('연결 저장에 실패했습니다.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -139,16 +172,27 @@ const DatabaseConnections: React.FC = () => {
       setIsLoading(true);
       setError(null);
       setSuccessMessage(null);
+      setValidationErrors({});
       
       try {
+        // Validate connection details
+        const validation = validateConnectionDetails(formValues);
+        if (!validation.isValid) {
+          setValidationErrors(validation.errors);
+          setIsLoading(false);
+          return;
+        }
+        
         const result = await saveConnection({
           ...formValues,
+          port: formValues.port as number,
           id: editConnectionId,
           userId: user?.uid || 'unknown-user',
         });
         
         if (result.success) {
-          setSuccessMessage('Connection updated successfully');
+          setSuccessMessage('연결이 성공적으로 업데이트되었습니다.');
+          showToast('연결이 성공적으로 업데이트되었습니다.', 'success');
           setEditConnectionId(null);
           setFormValues({
             name: '',
@@ -160,12 +204,18 @@ const DatabaseConnections: React.FC = () => {
             ssl: false,
             userId: user?.uid || 'unknown-user',
           });
+          
+          // Refresh the connection list
+          await loadConnections();
         } else {
-          setError(result.message || 'Failed to update connection');
+          setError(result.message || '연결 업데이트에 실패했습니다.');
+          showToast('연결 업데이트에 실패했습니다.', 'error');
         }
       } catch (err) {
-        setError('An error occurred while updating the connection');
-        console.error(err);
+        const errorMessage = getUserFriendlyErrorMessage(err);
+        logError(err, 'handleUpdateConnection');
+        setError('연결 업데이트 중 오류가 발생했습니다: ' + errorMessage);
+        showToast('연결 업데이트에 실패했습니다.', 'error');
       } finally {
         setIsLoading(false);
       }
@@ -174,7 +224,7 @@ const DatabaseConnections: React.FC = () => {
   
   // Delete a connection
   const handleDeleteConnection = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this connection?')) {
+    if (window.confirm('정말로 이 연결을 삭제하시겠습니까?')) {
       setIsLoading(true);
       setError(null);
       setSuccessMessage(null);
@@ -183,13 +233,20 @@ const DatabaseConnections: React.FC = () => {
         const result = await removeConnection(id);
         
         if (result.success) {
-          setSuccessMessage('Connection deleted successfully');
+          setSuccessMessage('연결이 성공적으로 삭제되었습니다.');
+          showToast('연결이 성공적으로 삭제되었습니다.', 'success');
+          
+          // Refresh the connection list
+          await loadConnections();
         } else {
-          setError(result.message || 'Failed to delete connection');
+          setError(result.message || '연결 삭제에 실패했습니다.');
+          showToast('연결 삭제에 실패했습니다.', 'error');
         }
       } catch (err) {
-        setError('An error occurred while deleting the connection');
-        console.error(err);
+        const errorMessage = getUserFriendlyErrorMessage(err);
+        logError(err, 'handleDeleteConnection');
+        setError('연결 삭제 중 오류가 발생했습니다: ' + errorMessage);
+        showToast('연결 삭제에 실패했습니다.', 'error');
       } finally {
         setIsLoading(false);
       }
@@ -205,10 +262,13 @@ const DatabaseConnections: React.FC = () => {
     try {
       // Set active connection in store
       setActiveConnection(id);
-      setSuccessMessage('Connection activated');
+      setSuccessMessage('연결이 활성화되었습니다.');
+      showToast('연결이 활성화되었습니다.', 'success');
     } catch (err) {
-      setError('Failed to activate connection');
-      console.error(err);
+      const errorMessage = getUserFriendlyErrorMessage(err);
+      logError(err, 'handleSetActiveConnection');
+      setError('연결 활성화 중 오류가 발생했습니다: ' + errorMessage);
+      showToast('연결 활성화에 실패했습니다.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -219,18 +279,24 @@ const DatabaseConnections: React.FC = () => {
     setIsTesting(connection.id);
     setError(null);
     setSuccessMessage(null);
+    setTestResults(null);
     
     try {
       const result = await testConnection(connection.id);
+      setTestResults(result);
       
       if (result.success) {
-        setSuccessMessage(`Connection successful: ${result.message}`);
+        setSuccessMessage(`연결 테스트 성공: ${result.message}`);
+        showToast('연결 테스트 성공', 'success');
       } else {
-        setError(`Connection failed: ${result.message}`);
+        setError(`연결 테스트 실패: ${result.message}`);
+        showToast('연결 테스트 실패', 'error');
       }
     } catch (err) {
-      setError('An error occurred while testing the connection');
-      console.error(err);
+      const errorMessage = getUserFriendlyErrorMessage(err);
+      logError(err, 'handleTestConnection');
+      setError('연결 테스트 중 오류가 발생했습니다: ' + errorMessage);
+      showToast('연결 테스트 실패', 'error');
     } finally {
       setIsTesting(null);
     }
@@ -241,25 +307,41 @@ const DatabaseConnections: React.FC = () => {
     setIsTesting('new');
     setError(null);
     setSuccessMessage(null);
+    setValidationErrors({});
+    setTestResults(null);
     
     try {
+      // Validate connection details
+      const validation = validateConnectionDetails(formValues);
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors);
+        setIsTesting(null);
+        return;
+      }
+      
       const result = await testConnection(undefined, {
         host: formValues.host,
-        port: formValues.port,
+        port: formValues.port as number,
         user: formValues.user,
         password: formValues.password,
         database: formValues.database,
         ssl: formValues.ssl,
       });
       
+      setTestResults(result);
+      
       if (result.success) {
         setSuccessMessage(`Connection successful: ${result.message}`);
+        showToast(`연결 테스트 성공: ${result.message}`, 'success');
       } else {
         setError(`Connection failed: ${result.message}`);
+        showToast(`연결 테스트 실패: ${result.message}`, 'error');
       }
     } catch (err) {
-      setError('An error occurred while testing the connection');
-      console.error(err);
+      const errorMessage = getUserFriendlyErrorMessage(err);
+      logError(err, 'handleTestNewConnection');
+      setError('연결 테스트 중 오류가 발생했습니다: ' + errorMessage);
+      showToast('연결 테스트 실패', 'error');
     } finally {
       setIsTesting(null);
     }
@@ -269,60 +351,66 @@ const DatabaseConnections: React.FC = () => {
   const ConnectionForm = () => (
     <div className="space-y-4">
       <Input
-        label="Connection Name"
+        label="연결 이름"
         name="name"
         value={formValues.name}
         onChange={handleInputChange}
         required
         fullWidth
+        error={validationErrors.name}
       />
       
       <Input
-        label="Host"
+        label="호스트"
         name="host"
         value={formValues.host}
         onChange={handleInputChange}
         required
         fullWidth
+        error={validationErrors.host}
       />
       
       <Input
-        label="Port"
+        label="포트"
         name="port"
         type="number"
-        value={formValues.port.toString()}
+        value={formValues.port?.toString() || ''}
         onChange={handleInputChange}
         required
         fullWidth
+        error={validationErrors.port}
       />
       
       <Input
-        label="Database"
+        label="데이터베이스"
         name="database"
         value={formValues.database}
         onChange={handleInputChange}
         required
         fullWidth
+        error={validationErrors.database}
       />
       
       <Input
-        label="User"
+        label="사용자"
         name="user"
         value={formValues.user}
         onChange={handleInputChange}
         required
         fullWidth
+        error={validationErrors.user}
       />
       
       <Input
-        label="Password"
+        label="비밀번호"
         name="password"
         type="password"
         value={formValues.password}
         onChange={handleInputChange}
         required={!editConnectionId} // Only required for new connections
         fullWidth
-        helperText={editConnectionId ? "Leave blank to keep current password" : ""}
+        helperText={editConnectionId ? "비밀번호를 그대로 유지하려면 비워두세요" : ""}
+        error={validationErrors.password}
       />
       
       <div className="flex items-center">
@@ -335,7 +423,7 @@ const DatabaseConnections: React.FC = () => {
           className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
         />
         <label htmlFor="ssl-connection" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-          Use SSL connection
+          SSL 연결 사용
         </label>
       </div>
       
@@ -345,7 +433,7 @@ const DatabaseConnections: React.FC = () => {
           onClick={handleCancelEdit}
           disabled={isLoading || isTesting !== null}
         >
-          Cancel
+          취소
         </Button>
         
         <Button
@@ -363,9 +451,9 @@ const DatabaseConnections: React.FC = () => {
           {isTesting ? (
             <span className="flex items-center">
               <Spinner size="sm" className="mr-2" />
-              Testing...
+              테스트 중...
             </span>
-          ) : 'Test Connection'}
+          ) : '연결 테스트'}
         </Button>
         
         <Button
@@ -383,13 +471,10 @@ const DatabaseConnections: React.FC = () => {
         >
           {isLoading ? (
             <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Saving...
+              <Spinner size="sm" className="mr-2" />
+              저장 중...
             </span>
-          ) : editConnectionId ? 'Update' : 'Save'} Connection
+          ) : editConnectionId ? '연결 업데이트' : '연결 저장'}
         </Button>
       </div>
       
@@ -404,6 +489,8 @@ const DatabaseConnections: React.FC = () => {
           {successMessage}
         </div>
       )}
+      
+      {testResults && <ConnectionTestDetails results={testResults} />}
     </div>
   );
   

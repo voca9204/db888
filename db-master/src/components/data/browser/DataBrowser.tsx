@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -9,6 +9,7 @@ import {
   getFacetedUniqueValues,
   flexRender,
   createColumnHelper,
+  Row,
 } from '@tanstack/react-table';
 
 // Define types manually since they're not exported directly in the current version
@@ -30,7 +31,10 @@ type PaginationState = {
   pageIndex: number;
   pageSize: number;
 };
-import { getTableData } from '@firebase/functions';
+import { getTableData } from '../../../firebase/functions.real';
+import { useToast } from '../../../context/ToastContext';
+import { getUserFriendlyErrorMessage, logError } from '../../../utils/errorUtils';
+import { updateTableRow } from '../../../services/tableService';
 
 // Using ColumnHelper instead of directly using ColumnDef
 const columnHelper = createColumnHelper<any>();
@@ -74,6 +78,13 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalRows, setTotalRows] = useState(0);
+  const { showToast } = useToast();
+  
+  // Editing states
+  const [editingRow, setEditingRow] = useState<Record<string, any> | null>(null);
+  const [editingValues, setEditingValues] = useState<Record<string, any>>({});
+  const [savingRow, setSavingRow] = useState(false);
+  const [primaryKeyColumn, setPrimaryKeyColumn] = useState<string | null>(null);
   
   // Table state
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -84,6 +95,64 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
     pageIndex: 0,
     pageSize: 10,
   });
+  
+  // Handle row edit start
+  const handleEditRow = useCallback((row: Row<any>) => {
+    setEditingRow(row.original);
+    setEditingValues({...row.original});
+  }, []);
+  
+  // Handle edit value change
+  const handleEditChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setEditingValues(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  }, []);
+  
+  // Save edited row
+  const handleSaveRow = useCallback(async () => {
+    if (!editingRow || !primaryKeyColumn) return;
+    
+    setSavingRow(true);
+    
+    try {
+      const primaryKeyValue = editingRow[primaryKeyColumn];
+      
+      const result = await updateTableRow(
+        connectionId,
+        tableName,
+        primaryKeyColumn,
+        primaryKeyValue,
+        editingValues
+      );
+      
+      if (result.success) {
+        // Update local data
+        setData(prev => prev.map(row => 
+          row[primaryKeyColumn] === primaryKeyValue ? editingValues : row
+        ));
+        
+        showToast('행이 성공적으로 업데이트되었습니다.', 'success');
+        setEditingRow(null);
+      } else {
+        showToast(`행 업데이트 실패: ${result.message}`, 'error');
+      }
+    } catch (err) {
+      const errorMessage = getUserFriendlyErrorMessage(err);
+      logError(err, 'handleSaveRow');
+      showToast(`행 업데이트 실패: ${errorMessage}`, 'error');
+    } finally {
+      setSavingRow(false);
+    }
+  }, [connectionId, tableName, primaryKeyColumn, editingRow, editingValues, showToast]);
+  
+  // Cancel editing
+  const handleCancelEdit = useCallback(() => {
+    setEditingRow(null);
+    setEditingValues({});
+  }, []);
   
   // Fetch data from the server
   useEffect(() => {
@@ -120,8 +189,12 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
           filters
         );
         
-        const tableData = result?.data?.rows || [];
-        const total = result?.data?.total || 0;
+        if (!result.data) {
+          throw new Error('서버로부터 유효하지 않은 응답이 왔습니다.');
+        }
+        
+        const tableData = result.data.rows || [];
+        const total = result.data.total || 0;
         
         // Set the data
         setData(tableData);
@@ -130,19 +203,61 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
         // Generate columns from the first row if we have data
         if (tableData.length > 0) {
           const firstRow = tableData[0];
+          
+          // Try to identify primary key column
+          // We'll consider columns with "id" in their name as potential primary keys
+          const potentialPrimaryKeys = Object.keys(firstRow).filter(key => 
+            key.toLowerCase() === 'id' || 
+            key.toLowerCase().endsWith('_id') || 
+            key.toLowerCase().endsWith('id')
+          );
+          
+          // Set the first potential primary key as the primary key
+          if (potentialPrimaryKeys.length > 0) {
+            setPrimaryKeyColumn(potentialPrimaryKeys[0]);
+          } else {
+            // If no potential primary key, use the first column
+            setPrimaryKeyColumn(Object.keys(firstRow)[0]);
+          }
+          
           const generatedColumns = Object.keys(firstRow).map(key => 
             columnHelper.accessor(key, {
               header: key.charAt(0).toUpperCase() + key.slice(1), // Capitalize first letter
               cell: info => {
+                const row = info.row;
+                const columnId = info.column.id;
                 const value = info.getValue();
+                
+                // If this row is being edited, render an input for this cell
+                if (editingRow && row.original === editingRow) {
+                  return (
+                    <input
+                      name={columnId}
+                      value={editingValues[columnId] ?? ''}
+                      onChange={handleEditChange}
+                      className="w-full px-2 py-1 border rounded"
+                      disabled={columnId === primaryKeyColumn} // Don't allow editing primary key
+                    />
+                  );
+                }
                 
                 // Format dates
                 if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
                   return new Date(value).toLocaleString();
                 }
                 
+                // Handle null or undefined
+                if (value === null || value === undefined) {
+                  return '<null>';
+                }
+                
+                // Handle boolean values
+                if (typeof value === 'boolean') {
+                  return value ? 'Yes' : 'No';
+                }
+                
                 // Return value as string
-                return String(value ?? '');
+                return String(value);
               },
               footer: props => props.column.id,
               enableSorting: true,
@@ -151,19 +266,26 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
           );
           
           setColumns(generatedColumns);
+        } else {
+          // Clear columns if no data
+          setColumns([]);
+          showToast(`"${tableName}" 테이블에 데이터가 없습니다.`, 'info');
         }
       } catch (err) {
-        console.error('Error fetching table data:', err);
-        setError('Failed to fetch table data. Please try again.');
+        const errorMessage = getUserFriendlyErrorMessage(err);
+        logError(err, 'DataBrowser.fetchData');
+        setError(errorMessage);
+        showToast(`테이블 데이터를 가져오는데 실패했습니다: ${errorMessage}`, 'error');
         setData([]);
         setTotalRows(0);
+        setColumns([]);
       } finally {
         setLoading(false);
       }
     };
     
     fetchData();
-  }, [connectionId, tableName, pagination, sorting, columnFilters]);
+  }, [connectionId, tableName, pagination, sorting, columnFilters, showToast]);
   
   // Memoize the table instance
   const table = useReactTable({
@@ -205,7 +327,7 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
             onClick={() => table.setColumnVisibility({})}
             className="px-3 py-1 bg-secondary-500 text-white rounded hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-secondary-400"
           >
-            Show All Columns
+            모든 컬럼 표시
           </button>
           
           <button
@@ -217,36 +339,44 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
             }}
             className="px-3 py-1 bg-secondary-500 text-white rounded hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-secondary-400"
           >
-            Hide All Columns
+            모든 컬럼 숨기기
           </button>
           
           <button
             onClick={() => {
               // Generate CSV
-              const headers = table.getFlatHeaders().map(header => header.column.id);
-              const rows = table.getRowModel().rows.map(row => 
-                row.getVisibleCells().map(cell => String(cell.getValue()))
-              );
-              
-              const csv = [
-                headers.join(','),
-                ...rows.map(row => row.join(','))
-              ].join('\n');
-              
-              // Download CSV
-              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-              const url = URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.setAttribute('href', url);
-              link.setAttribute('download', `${tableName}_export.csv`);
-              link.style.visibility = 'hidden';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
+              try {
+                const headers = table.getFlatHeaders().map(header => header.column.id);
+                const rows = table.getRowModel().rows.map(row => 
+                  row.getVisibleCells().map(cell => String(cell.getValue() ?? ''))
+                );
+                
+                const csv = [
+                  headers.join(','),
+                  ...rows.map(row => row.join(','))
+                ].join('\n');
+                
+                // Download CSV
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${tableName}_export.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast('CSV 파일이 다운로드되었습니다.', 'success');
+              } catch (err) {
+                const errorMessage = getUserFriendlyErrorMessage(err);
+                logError(err, 'DataBrowser.exportCSV');
+                showToast(`CSV 내보내기에 실패했습니다: ${errorMessage}`, 'error');
+              }
             }}
             className="px-3 py-1 bg-primary-500 text-white rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-400"
           >
-            Export CSV
+            CSV 내보내기
           </button>
         </div>
       </div>
@@ -276,8 +406,9 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
       )}
       
       {error && (
-        <div className="bg-danger-100 text-danger-800 p-4 rounded mb-4">
-          {error}
+        <div className="bg-danger-100 text-danger-800 p-4 rounded mb-4 dark:bg-danger-900 dark:text-danger-200">
+          <p className="font-medium">오류가 발생했습니다:</p>
+          <p>{error}</p>
         </div>
       )}
       
@@ -323,7 +454,7 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
                               checked={header.column.getIsVisible()}
                               onChange={header.column.getToggleVisibilityHandler()}
                             />
-                            <span className="ml-2 text-xs">Show</span>
+                            <span className="ml-2 text-xs">표시</span>
                           </label>
                         </div>
                         
@@ -337,6 +468,9 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
                     )}
                   </th>
                 ))}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  액션
+                </th>
               </tr>
             ))}
           </thead>
@@ -360,6 +494,33 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
                     )}
                   </td>
                 ))}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                  {editingRow === row.original ? (
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={handleSaveRow}
+                        disabled={savingRow}
+                        className="text-green-500 hover:text-green-700"
+                      >
+                        {savingRow ? '저장 중...' : '저장'}
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        disabled={savingRow}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleEditRow(row)}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      편집
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -381,6 +542,9 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
                     )}
                   </th>
                 ))}
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  액션
+                </th>
               </tr>
             ))}
           </tfoot>
@@ -391,12 +555,12 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
       <div className="flex justify-between items-center mt-4">
         <div className="flex items-center">
           <span className="text-sm text-gray-700 dark:text-gray-200">
-            Page {' '}
-            <span className="font-medium">{table.getState().pagination.pageIndex + 1}</span> of{' '}
+            페이지 {' '}
+            <span className="font-medium">{table.getState().pagination.pageIndex + 1}</span> / {' '}
             <span className="font-medium">{table.getPageCount()}</span>
-            {' '} | Showing {' '}
-            <span className="font-medium">{pagination.pageSize}</span> of{' '}
-            <span className="font-medium">{totalRows}</span> rows
+            {' '} | 표시: {' '}
+            <span className="font-medium">{pagination.pageSize}</span> / {' '}
+            <span className="font-medium">{totalRows}</span> 행
           </span>
         </div>
         
@@ -455,7 +619,7 @@ const DataBrowser: React.FC<DataBrowserProps> = ({
           >
             {[10, 25, 50, 100].map(pageSize => (
               <option key={pageSize} value={pageSize}>
-                Show {pageSize}
+                {pageSize}행 표시
               </option>
             ))}
           </select>
